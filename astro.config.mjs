@@ -155,6 +155,7 @@ export default defineConfig({
 		],
 	},
 	vite: {
+		assetsInclude: ["**/*.xmind"],
 		build: {
 			rollupOptions: {
 				onwarn(warning, warn) {
