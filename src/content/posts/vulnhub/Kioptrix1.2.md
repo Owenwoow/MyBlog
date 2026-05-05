@@ -154,7 +154,7 @@ Web 渗透方面，我先去探测一下目录扫描，在等待结果的同时�
 
 - 可见功能入口：首页 / 博客 / 后台登录
 
-- LFI测试无效
+- LFI 测试无效
 
 ![](./img/Kioptrix1.2/image-20260502123215556.png)
 
@@ -281,7 +281,7 @@ curl -X POST "http://192.168.200.156/index.php" \
 ![](./img/Kioptrix1.2/image-20260429193827156.png)
 
 ---
-# 3.提权
+# 3. 提权
 
 ## 3.1 信息收集
 
@@ -311,7 +311,7 @@ Linux Kioptrix3 2.6.24-24-server #1 SMP Tue Jul 7 20:21:17 UTC 2009 i686 GNU/Lin
 ### 有效提权信息列举：
 
 ```bash
-# 列出具有suid权限的用户
+# 列出具有 SUID 权限的用户
 www-data@Kioptrix3:/home/www/kioptrix3.com$ find / -perm -u=s -type f 2>/dev/null
 <w/kioptrix3.com$ find / -perm -u=s -type f 2>/dev/null                      
 /usr/lib/eject/dmcrypt-get-device
@@ -359,7 +359,7 @@ $GLOBALS["gallarific_mysql_password"] = "fuckeyou";
 ---
 ## 3.3 内核漏洞提权
 
-由于在 SUID 权限和计划任务的信息收集上没有找到有效信息，我决定使用内核提权来获得 root shell。针对内核 `2.6.24`，在攻击机搜索可用的漏洞利用代码，锁定目标为 Dirty COW 提权系列。
+由于在 SUID 权限和计划任务的信息收集上没有找到有效信息，我决定使用内核提权来获得 Root Shell。针对内核 `2.6.24`，在攻击机搜索可用的漏洞利用代码，锁定目标为 Dirty COW 提权系列。
 
 ```bash
 ┌──(kali㉿kali)-[~/vulnhub/Kioptrix1.2]
@@ -398,7 +398,7 @@ searchsploit -m linux/local/40839.c
 python3 -m http.server 8081
 ```
 
-#### 2.靶机下载与编译修复
+#### 2. 靶机下载与编译修复
 
 在靶机 `/tmp` 目录下载 EXP 并进行编译。**注意**：直接使用 `gcc` 会因为缺少线程库和加密库导致链接失败。
 
@@ -446,9 +446,9 @@ firefart
 ![](./img/Kioptrix1.2/image-20260430112304804.png)
 
 
-# 4.总结
+# 4. 总结
 
-这台靶机整体上我认为是偏简单的，我通过两个 exp 直接拿下。不过对于整个打靶思维来说，我的判断不够明确——我是在看到红笔视频标题里 CMS 那个关键词的一刻，才觉得去利用 exp 获得 web shell。在此之前，我一直想通过网站本身的探测去拿下 web shell，感觉这方面的思路不太行。
+这台靶机整体上我认为是偏简单的，我通过两个 exp 直接拿下。不过对于整个打靶思维来说，我的判断不够明确——我是在看到红笔视频标题里 CMS 那个关键词的一刻，才觉得去利用 exp 获得 Web Shell。在此之前，我一直想通过网站本身的探测去拿下 Web Shell，感觉这方面的思路不太行。
 
 **回顾整个打靶过程：**
 
@@ -464,18 +464,18 @@ firefart
 
 **3. 获取 Web Shell 阶段**
 
-通过 exp 拿到了 web shell，并通过 web shell 登录了 MySQL 数据库（也可以通过扫描到的 phpMyAdmin 登录 MySQL 数据库）。
+通过 exp 拿到了 Web Shell，并通过 Web Shell 登录了 MySQL 数据库（也可以通过扫描到的 phpMyAdmin 登录 MySQL 数据库）。
 
 **4. 提权阶段（我的做法 vs 靶场预期做法）**
 
-- **我的做法**：直接用脏牛内核漏洞对 Linux 主机进行提权。
-- **靶场作者预期的做法**：拿到 web shell 后，对整个配置文件进行查询，最终找到 MySQL 的配置文件。登录数据库后，能发现 3 对密码，然后对这些密码进行破解，尝试是否可以作为 SSH 密码——最终得到一个权限比 www-data 更高的用户，再通过这个用户去进行后续的提权操作。
+- **我的做法**：直接用 Dirty COW 内核漏洞对 Linux 主机进行提权。
+- **靶场作者预期的做法**：拿到 Web Shell 后，对整个配置文件进行查询，最终找到 MySQL 的配置文件。登录数据库后，能发现 3 对密码，然后对这些密码进行破解，尝试是否可以作为 SSH 密码——最终得到一个权限比 www-data 更高的用户，再通过这个用户去进行后续的提权操作。
 
 
 
 
 
-# 5.补充
+# 5. 补充
 
 ### 为什么 gallery 目录有价值
 
@@ -517,7 +517,7 @@ settings.php
 
 ### 更通用的渗透思维
 
-拿到 web shell 之后，找密码的优先级顺序：
+拿到 Web Shell 之后，找密码的优先级顺序：
 
 ```
 1. 数据库配置文件  ← 明文密码，最直接
@@ -529,7 +529,7 @@ settings.php
 **核心逻辑：开发者为了让程序自动连接数据库，密码必须以明文或可逆方式存在某个文件里。** 这是 Web 渗透中最稳定的信息来源之一。
 
 
-# 6.红笔追加操作（新提权方式）
+# 6. 红笔追加操作（新提权方式）
 
 发现 CMS 可以在 CLI 中用 searchsploit 查，这样我觉得会更快一点。
 
@@ -680,7 +680,7 @@ loneferret ALL=(ALL) NOPASSWD: /bin/bash
 
 ![](./img/Kioptrix1.2/image-20260502152552238.png)
 
-3 保存退出后(F2保存， F10保存退出)，直接生成 Root Shell：
+3. 保存退出后（F2 保存，F10 保存退出），直接生成 Root Shell：
 
 ```
 loneferret@Kioptrix3:~$ sudo /bin/bash
@@ -693,7 +693,7 @@ root
 至此，完美还原了靶机作者设计的初衷，提权彻底打穿。
 
 ---
-# 7.漏洞原理分析
+# 7. 漏洞原理分析
 
 ## 7.1 漏洞概述
 
