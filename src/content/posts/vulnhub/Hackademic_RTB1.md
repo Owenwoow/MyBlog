@@ -1,5 +1,5 @@
 ---
-title: Vulnhub - Hackademic_RTB1
+title: Vulnhub Hackademic_RTB1 WriteUp
 published: 2026-05-05
 description: 经典的 SQL 注入利用与内核提权靶机 Writeup
 image: './img/header/Hackademic_RTB1.png'

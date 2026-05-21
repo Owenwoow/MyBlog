@@ -1,5 +1,5 @@
 ---
-title: Vulnhub - Tr0ll
+title: Vulnhub Tr0ll WriteUp
 published: 2026-05-05
 description: Tr0ll 靶机渗透实战，涵盖 FTP 匿名登录、PCAP 流量分析、Web 目录枚举、ELF 二进制逆向分析及 Cron 计划任务提权
 image: './img/header/Tr0ll.png'

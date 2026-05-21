@@ -1,5 +1,5 @@
 ---
-title: Vulnhub - Billu_b0x
+title: Vulnhub Billu_b0x WriteUp
 published: 2026-05-05
 description: 通过 SQL 注入、文件包含漏洞和内核提权完成 Billu_b0x 靶机渗透，涉及代码审计、图片木马制作等技术
 image: './img/header/Billu_b0x.png'

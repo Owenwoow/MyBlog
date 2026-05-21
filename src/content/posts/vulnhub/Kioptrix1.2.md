@@ -1,5 +1,5 @@
 ---
-title: Vulnhub - Kioptrix 1.2
+title: Vulnhub Kioptrix 1.2 WriteUp
 published: 2026-05-05
 description: 利用 LotusCMS 漏洞获取 Web Shell，通过数据库凭据复用进行横向移动，最终使用 Dirty COW 内核漏洞和 sudo 配置漏洞完成提权
 image: './img/header/Kioptrix1.2.png'

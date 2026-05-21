@@ -1,5 +1,5 @@
 ---
-title: 'Vulnhub - Holynix'
+title: Vulnhub Holynix WriteUp
 published: 2026-05-05
 description: '巧妙运用 SQL 注入和 LFI 漏洞进行渗透，结合 Cookie 越权和 sudo 提权拿下靶机'
 image: './img/header/holynix.png'

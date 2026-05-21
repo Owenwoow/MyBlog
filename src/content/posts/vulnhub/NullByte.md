@@ -1,5 +1,5 @@
 ---
-title: Vulnhub - NullByte
+title: Vulnhub NullByte WriteUp
 published: 2026-05-05
 description: Vulnhub NullByte 靶机 Writeup，涉及 Hydra 暴力破解、SQL 注入多种利用方式、SUID 提权等技术
 image: './img/header/NullByte.png'
