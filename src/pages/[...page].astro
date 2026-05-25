@@ -18,6 +18,28 @@ const len = page.data.length;
 ---
 
 <MainGridLayout description="欢迎来到Owen_W的博客，这是一个记录个人成长与技术探索的博客，主要分享计算机学习笔记与日常折腾电子产品的记录。内容涵盖开发环境搭建、网络搭建、云计算、网络安全、工具使用心得等，以持续总结与反思的方式沉淀知识。博客基于 Astro 与 Fuwari 构建，在美观的同时注重简洁与专注，旨在为学习与记录提供一个安静而高效的空间。">
+    <script type="application/ld+json" slot="head" is:inline>
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Owen_W Blog",
+      "url": "https://blog.owenwoow.com",
+      "description": "记录技术成长与生活思考的个人博客",
+      "author": {
+        "@type": "Person",
+        "name": "Owen_W",
+        "url": "https://blog.owenwoow.com"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://blog.owenwoow.com/?search={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
     <PostPage page={page}></PostPage>
     <Pagination class="mx-auto onload-animation" page={page} style={`animation-delay: calc(var(--content-delay) + ${(len)*50}ms)`}></Pagination>
 </MainGridLayout>
