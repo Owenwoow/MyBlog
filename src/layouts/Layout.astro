@@ -101,6 +101,7 @@ const bannerOffset =
 		
 		<!-- Microsoft Bing Webmaster Tools verification -->
 		<meta name="msvalidate.01" content="21BFB0CDA445962F872741BC98C64381" />
+		<link rel="canonical" href={new URL(Astro.url.pathname, Astro.site).toString()} />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
 		{favicons.map(favicon => (
