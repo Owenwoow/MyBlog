@@ -9,7 +9,7 @@ import { LinkPreset } from "./types/config";
 
 export const siteConfig: SiteConfig = {
 	title: "Owen_W Blog",
-	subtitle: "Demo Site",
+	subtitle: "记录技术成长与生活思考的个人博客",
 	lang: "zh_CN", // 'en', 'zh_CN', 'zh_TW', 'ja', 'ko', 'es', 'th', 'vi' - 支持的语言
 	themeColor: {
 		hue: 250, // 主题色的默认色相，范围0-360。例如：红色: 0, 青色: 200, 青色: 250, 粉色: 345
