@@ -1,4 +1,4 @@
-# 🍥 Owen_W Blog  
+# Owen_W Blog  
 
 > 记录技术成长与生活思考的个人博客
 
