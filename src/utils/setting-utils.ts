@@ -44,7 +44,7 @@ export function applyThemeToDocument(theme: LIGHT_DARK_MODE) {
 			break;
 	}
 
-	// 为 Expressive Code 设置主题
+	// Set theme for Expressive Code
 	document.documentElement.setAttribute(
 		"data-theme",
 		expressiveCodeConfig.theme,

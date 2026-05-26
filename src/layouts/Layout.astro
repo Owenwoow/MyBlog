@@ -30,19 +30,13 @@ interface Props {
 
 let { title, banner, description, lang, setOGTypeArticle } = Astro.props;
 
-// 向 body 元素应用一个类来决定横幅的高度，仅用于初始页面加载
-// Swup 可以为每次页面访问更新 body，但这在页面过渡之后，导致横幅高度变化延迟
-// 所以使用 Swup 钩子来在链接被点击时立即改变高度
 const isHomePage = pathsEqual(Astro.url.pathname, url("/"));
 
-// 定义全局 CSS 变量
-// 为什么在 Layout 中而不是 GlobalStyles 中执行此操作：https://github.com/withastro/astro/issues/6728#issuecomment-1502203757
 const configHue = siteConfig.themeColor.hue;
 if (!banner || typeof banner !== "string" || banner.trim() === "") {
 	banner = siteConfig.banner.src;
 }
 
-// TODO 暂时不使用文章封面作为横幅
 banner = siteConfig.banner.src;
 
 const enableBanner = siteConfig.banner.enable;
@@ -124,20 +118,18 @@ const bannerOffset =
 			/>
 		))}
 
-		<!-- Busuanzi 统计脚本 -->
+		<!-- Busuanzi stats script -->
 		<script src="//api.busuanzi.cc/static/3.6.9/busuanzi.min.js" defer></script>
 
-		<!-- 在页面渲染前设置主题以避免闪烁 -->
+		<!-- Set theme before rendering to avoid flicker -->
 		<script is:inline define:vars={{DEFAULT_THEME, BANNER_HEIGHT_EXTEND, PAGE_WIDTH, configHue}}>
-			// 直接设置为暗色模式
 			document.documentElement.classList.add('dark');
 			localStorage.setItem('theme', 'dark');
 
-			// 从本地存储加载色相
 			const hue = localStorage.getItem('hue') || configHue;
 			document.documentElement.style.setProperty('--hue', hue);
 
-			// 计算 --banner-height-extend，需要是4的倍数以避免模糊文本
+			// Calculate --banner-height-extend, must be a multiple of 4 to avoid blurry text
 			let offset = Math.floor(window.innerHeight * (BANNER_HEIGHT_EXTEND / 100));
 			offset = offset - offset % 4;
 			document.documentElement.style.setProperty('--banner-height-extend', `${offset}px`);
@@ -145,7 +137,7 @@ const bannerOffset =
 		<style define:vars={{
 			configHue,
 			'page-width': `${PAGE_WIDTH}rem`,
-		}}></style>  <!-- 定义全局 CSS 变量。这将应用于 <html> <body> 和其他一些元素，不知道为什么 -->
+		}}></style>
 
 
 		<slot name="head"></slot>
@@ -159,7 +151,7 @@ const bannerOffset =
 		<ConfigCarrier></ConfigCarrier>
 		<slot />
 
-		<!-- 在页面过渡期间增加页面高度以防止滚动动画跳跃 -->
+		<!-- Increase page height during transitions to prevent scroll jumping -->
 		<div id="page-height-extend" class="hidden h-[300vh]"></div>
 	</body>
 </html>
