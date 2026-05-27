@@ -1,5 +1,7 @@
 import type { APIRoute } from "astro";
 
+const siteUrl = import.meta.env.SITE || "https://blog.owenwoow.com";
+
 const robotsTxt = `
 User-agent: *
 Allow: /
@@ -10,7 +12,7 @@ Disallow: /404
 User-agent: Bingbot
 Crawl-delay: 1
 
-Sitemap: ${new URL("sitemap-index.xml", import.meta.env.SITE).href}
+Sitemap: ${new URL("sitemap-index.xml", siteUrl).href}
 `.trim();
 
 export const GET: APIRoute = () => {

@@ -64,6 +64,8 @@ const bannerOffsetByPosition = {
 };
 const bannerOffset =
 	bannerOffsetByPosition[siteConfig.banner.position || "center"];
+
+const siteUrl = Astro.site || Astro.url.origin || "https://blog.owenwoow.com";
 ---
 
 <!DOCTYPE html>
@@ -96,18 +98,18 @@ const bannerOffset =
 		<meta property="twitter:url" content={Astro.url}>
 		<meta name="twitter:title" content={pageTitle}>
 		<meta name="twitter:description" content={description || siteConfig.subtitle || pageTitle}>
-		<meta property="og:image" content={new URL('/og-image.jpg', Astro.site).toString()} />
+		<meta property="og:image" content={new URL('/og-image.jpg', siteUrl).toString()} />
 		<meta property="og:image:width" content="1200" />
 		<meta property="og:image:height" content="630" />
 		<meta property="og:image:alt" content={pageTitle} />
-		<meta name="twitter:image" content={new URL('/og-image.jpg', Astro.site).toString()} />
+		<meta name="twitter:image" content={new URL('/og-image.jpg', siteUrl).toString()} />
 		
 		<!-- Microsoft Bing Webmaster Tools verification -->
 		<meta name="msvalidate.01" content="21BFB0CDA445962F872741BC98C64381" />
 
 		<!-- Google Search Console verification -->
 		<meta name="google-site-verification" content="DrD8wPZ400GI4AzwgHcBOMYRZUBMyK4afoVZxhXHkkw" />
-		<link rel="canonical" href={new URL(Astro.url.pathname, Astro.site).toString()} />
+		<link rel="canonical" href={new URL(Astro.url.pathname, siteUrl).toString()} />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
 		{favicons.map(favicon => (

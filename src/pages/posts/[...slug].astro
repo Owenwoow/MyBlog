@@ -28,6 +28,8 @@ const { Content, headings } = await entry.render();
 
 const { remarkPluginFrontmatter } = await entry.render();
 
+const siteUrl = Astro.site || Astro.url.origin || "https://blog.owenwoow.com";
+
 const jsonLd = {
 	"@context": "https://schema.org",
 	"@type": "BlogPosting",
@@ -35,12 +37,12 @@ const jsonLd = {
 	description: entry.data.description || entry.data.title,
 	keywords: entry.data.tags,
 	image: entry.data.image
-		? new URL(entry.data.image, Astro.site).toString()
-		: new URL('/og-image.jpg', Astro.site).toString(),
+		? new URL(entry.data.image, siteUrl).toString()
+		: new URL("/og-image.jpg", siteUrl).toString(),
 	author: {
 		"@type": "Person",
 		name: profileConfig.name,
-		url: Astro.site,
+		url: siteUrl,
 	},
 	datePublished: formatDateToYYYYMMDD(entry.data.published),
 	dateModified: entry.data.updated
@@ -48,12 +50,12 @@ const jsonLd = {
 		: formatDateToYYYYMMDD(entry.data.published),
 	mainEntityOfPage: {
 		"@type": "WebPage",
-		"@id": new URL(`/posts/${entry.slug}/`, Astro.site).toString(),
+		"@id": new URL(`/posts/${entry.slug}/`, siteUrl).toString(),
 	},
 	publisher: {
 		"@type": "Person",
 		name: profileConfig.name,
-		url: Astro.site,
+		url: siteUrl,
 	},
 	inLanguage: entry.data.lang
 		? entry.data.lang.replace("_", "-")
