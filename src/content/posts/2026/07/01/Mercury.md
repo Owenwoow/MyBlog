@@ -1,11 +1,11 @@
 ---
-title: Vulnhub Mercury WriteUp
+title: 'Vulnhub 打靶记录:Mercury'
 published: 2026-07-01
-description: 'Mercury 是一台偏简单的靶机，主要练习 Django 调试模式信息泄露、手工 SQL 注入拿凭据，以及横向移动和环境变量劫持提权。'
+description: 'VulnHub 上的 Mercury，难度 Easy。Django 调试泄露、SQL 注入爆库获得凭据，环境变量劫持提权到 root。'
 image: './img/Mercury/Mercury_header.png'
-tags: ["Vulnhub", "Security", "靶机", "writeup"]
-category: 'Security'
-draft: false 
+tags: ["VulnHub", "Easy", "Linux", "SQL注入", "凭据复用", "环境变量提权"]
+category: '靶机渗透'
+draft: false
 lang: ''
 ---
 

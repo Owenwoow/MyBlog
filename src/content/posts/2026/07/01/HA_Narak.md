@@ -1,11 +1,11 @@
 ---
-title: Vulnhub HA Narak WriteUp
+title: 'Vulnhub 打靶记录:HA Narak'
 published: 2026-07-01
-description: 'HA: NARAK 是一台以印度神话为主题的 VulnHub 靶机，涉及 TFTP 枚举、WebDAV 认证与 PUT 方法上传 Webshell、Brainfuck 编码解密以及可写文件提权。'
+description: 'VulnHub 上的 HA Narak，难度 Medium。TFTP 下载凭据、WebDAV 上传 webshell，Brainfuck 解密凭据，最后 MOTD 提权到 root。'
 image: './img/HA_Narak/HA_Narak_header.png'
-tags: ["Vulnhub", "Security", "靶机", "writeup"]
-category: 'Security'
-draft: false 
+tags: ["VulnHub", "Medium", "Linux", "文件上传", "密码破解", "提权"]
+category: '靶机渗透'
+draft: false
 lang: ''
 ---
 

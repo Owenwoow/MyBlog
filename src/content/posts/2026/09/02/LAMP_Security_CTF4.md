@@ -1,10 +1,10 @@
 ---
-title: Vulnhub LAMP_Security_CTF4 WriteUp
+title: 'Vulnhub 打靶记录:LAMPSecurity CTF4'
 published: 2026-09-02
-description: '超级简单的一台机器，没什么难度，考验sql注入。'
+description: 'VulnHub 上的 LAMPSecurity CTF4，难度 Easy。通过 SQL 注入联合查询拖出用户数据库，登入 SSH 后利用 sudo 权限配置不当直接提权到 root。'
 image: './img/LAMP_Security_CTF4/LAMP_Security_CTF4_header.png'
-tags: ["Vulnhub", "Security", "靶机", "writeup"]
-category: 'Security'
+tags: ["VulnHub", "Easy", "Linux", "SQL注入", "sudo提权"]
+category: '靶机渗透'
 draft: false
 lang: ''
 ---

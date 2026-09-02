@@ -1,10 +1,10 @@
 ---
-title: 'Vulnhub pWnOS 2.0 WriteUp'
+title: 'Vulnhub 打靶记录:pWnOS 2.0'
 published: 2026-05-28
-description: 'pWnOS: 2.0 是一台托管在 Vulnhub 上的 Linux 靶机，IP 静态设置为 10.10.10.100，需要将攻击机配置在同一 10.10.10.0/24 网段内。'
+description: 'VulnHub 上的 pWnOS 2.0，难度 Easy。通过 Simple PHP Blog CMS 漏洞上传 webshell 获得 web 权限，从配置文件泄露的凭证直接 SSH 登入 root。'
 image: './img/pWnOS_20/pWnOS_20_header.png'
-tags: ["Vulnhub", "Security", "靶机", "writeup"]
-category: 'Security'
+tags: ["VulnHub", "Easy", "Linux", "文件上传", "凭据复用"]
+category: '靶机渗透'
 draft: false
 lang: ''
 ---

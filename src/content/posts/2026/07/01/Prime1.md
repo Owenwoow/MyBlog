@@ -1,11 +1,11 @@
 ---
-title: Vulnhub Prime 1 WriteUp
+title: 'Vulnhub 打靶记录:Prime 1'
 published: 2026-07-01
-description: 'Prime: 1 是面向 OSCP 备考人群的解谜式靶机，涉及 wfuzz 参数发现、LFI 读取敏感文件、WordPress 主题编辑器写入 Webshell 以及内核提权。'
+description: 'VulnHub 上的 Prime 1，难度 Medium。参数 fuzz 发现 LFI 漏洞获取敏感文件，WordPress 主题编辑器上传 webshell，最后利用内核提权到 root。'
 image: './img/Prime1/Prime1_header.png'
-tags: ["Vulnhub", "Security", "靶机", "writeup"]
-category: 'Security'
-draft: false 
+tags: ["VulnHub", "Medium", "Linux", "文件包含", "CMS漏洞", "内核提权"]
+category: '靶机渗透'
+draft: false
 lang: ''
 ---
 

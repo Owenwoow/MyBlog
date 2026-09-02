@@ -1,10 +1,10 @@
 ---
-title: Vulnhub NullByte WriteUp
+title: 'Vulnhub 打靶记录:NullByte'
 published: 2026-05-05
-description: Vulnhub NullByte 靶机 Writeup，涉及 Hydra 暴力破解、SQL 注入多种利用方式、SUID 提权等技术
+description: 'VulnHub 上的 NullByte，难度 Easy。从图片隐写信息中发现隐藏目录，Union SQL 注入提取数据库用户凭据，最后通过 SUID 程序提权获得 root。'
 image: './img/header/NullByte.png'
-tags: ["Vulnhub", "Security", "靶机", "writeup"]
-category: 'Security'
+tags: ["VulnHub", "Easy", "Linux", "隐写", "SQL注入", "SUID提权"]
+category: '靶机渗透'
 draft: false
 lang: ''
 ---

@@ -1,10 +1,10 @@
 ---
-title: Vulnhub LAMP_Security_CTF7 WriteUp
+title: 'Vulnhub 打靶记录:LAMPSecurity CTF7'
 published: 2026-09-02
-description: 'LAMP Security 系列的第 7 台，难度 easy，整体是一条很顺的链：靠 SQL 报错在后台用万能密码登入，找到文件上传点传反弹 shell 拿到 webshell，再从 root 备份的 backup.sql 里拖出一整张…'
+description: 'VulnHub 上的 LAMPSecurity CTF7，难度 Easy。通过 SQL 报错注入登入后台，文件上传反弹 shell 拿到 webshell，再利用 sudo 权限配置不当直接提权到 root。'
 image: './img/LAMP_Security_CTF7/LAMP_Security_CTF7_header.png'
-tags: ["Vulnhub", "Security", "靶机", "writeup"]
-category: 'Security'
+tags: ["VulnHub", "Easy", "Linux", "SQL注入", "文件上传", "sudo提权"]
+category: '靶机渗透'
 draft: false
 lang: ''
 ---

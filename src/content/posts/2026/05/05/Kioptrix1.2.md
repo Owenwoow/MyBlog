@@ -1,11 +1,11 @@
 ---
-title: Vulnhub Kioptrix 1.2 WriteUp
+title: 'Vulnhub 打靶记录:Kioptrix 1.2'
 published: 2026-05-05
-description: 利用 LotusCMS 漏洞获取 Web Shell，通过数据库凭据复用进行横向移动，最终使用 Dirty COW 内核漏洞和 sudo 配置漏洞完成提权
+description: 'VulnHub 上的 Kioptrix 1.2，难度 Medium。LotusCMS 命令注入获取 WebShell，数据库凭据复用实现横向移动，最后借 Dirty COW 内核漏洞提权到 root。'
 image: './img/header/Kioptrix1.2.png'
-tags: ["Vulnhub", "Security","靶机", "writeup"]
-category: 'Security'
-draft: false 
+tags: ["VulnHub", "Medium", "Linux", "CMS漏洞", "命令注入", "内核提权"]
+category: '靶机渗透'
+draft: false
 lang: ''
 ---
 

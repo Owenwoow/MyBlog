@@ -1,10 +1,10 @@
 ---
-title: Vulnhub SickOS 1.1 WriteUp
+title: 'Vulnhub 打靶记录:SickOS 1.1'
 published: 2026-05-20
-description: SickOS 1.1 是 VulnHub 平台上一台以渗透测试为主题的入门级靶机，整体难度适中。靶机的核心考察点在于对非常规端口服务（HTTP 代理）的识别与利用，以及 CMS 漏洞的挖掘和凭据复用提权。
+description: 'VulnHub 上的 SickOS 1.1，难度 Medium。通过 Squid 代理访问隐藏的 WolfCMS，利用默认凭据登入后台，文件上传反弹 Shell，最后通过凭据复用和 sudo 提权到 root。'
 image: './img/header/SickOS-1.1.png'
-tags: ["Vulnhub", "Security","靶机", "writeup"]
-category: 'Security'
+tags: ["VulnHub", "Medium", "Linux", "文件上传", "凭据复用", "sudo提权"]
+category: '靶机渗透'
 draft: false
 lang: ''
 ---

@@ -1,11 +1,11 @@
 ---
-title: Vulnhub Tr0ll WriteUp
+title: 'Vulnhub 打靶记录:Tr0ll'
 published: 2026-05-05
-description: Tr0ll 靶机渗透实战，涵盖 FTP 匿名登录、PCAP 流量分析、Web 目录枚举、ELF 二进制逆向分析及 Cron 计划任务提权
+description: 'VulnHub 上的 Tr0ll，难度 Easy。利用 FTP 匿名登录获取流量包，通过 PCAP 流量分析和二进制逆向提取密钥，SSH 弱口令爆破立足系统，最后通过计划任务脚本注入实现提权到 root。'
 image: './img/header/Tr0ll.png'
-tags: ["Vulnhub", "Security","靶机", "writeup"]
-category: 'Security'
-draft: false 
+tags: ["VulnHub", "Easy", "Linux", "流量分析", "弱口令爆破", "计划任务提权"]
+category: '靶机渗透'
+draft: false
 lang: ''
 ---
 

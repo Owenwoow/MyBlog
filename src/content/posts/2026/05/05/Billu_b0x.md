@@ -1,11 +1,11 @@
 ---
-title: Vulnhub Billu_b0x WriteUp
+title: 'Vulnhub 打靶记录:Billu_b0x'
 published: 2026-05-05
-description: 通过 SQL 注入、文件包含漏洞和内核提权完成 Billu_b0x 靶机渗透，涉及代码审计、图片木马制作等技术
+description: 'VulnHub 上的 Billu_b0x，难度 Easy。SQL 注入反斜杠绕过获取凭据，再利用 LFI 包含文件并上传图片木马反弹 Shell，最后靠内核提权漏洞获得 root。'
 image: './img/header/Billu_b0x.png'
-tags: ["Vulnhub", "Security","靶机", "writeup"]
-category: 'Security'
-draft: false 
+tags: ["VulnHub", "Easy", "Linux", "SQL注入", "文件包含", "内核提权"]
+category: '靶机渗透'
+draft: false
 lang: ''
 ---
 

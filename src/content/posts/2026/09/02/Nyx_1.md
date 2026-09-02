@@ -1,10 +1,10 @@
 ---
-title: Vulnhub Nyx_1 WriteUp
+title: 'Vulnhub 打靶记录:Nyx 1'
 published: 2026-09-02
-description: '非常简单的一台机器，完全不需要多想，直接顺着结果去做就好。适合用来恢复手感。'
+description: 'VulnHub 上的 Nyx 1，难度 Easy。通过目录爆破找到 SSH 私钥文件，使用密钥登入后，利用 gcc 的 SUID 权限直接提权到 root。'
 image: './img/Nyx_1/Nyx_1_header.png'
-tags: ["Vulnhub", "Security", "靶机", "writeup"]
-category: 'Security'
+tags: ["VulnHub", "Easy", "Linux", "目录爆破", "SUID提权"]
+category: '靶机渗透'
 draft: false
 lang: ''
 ---

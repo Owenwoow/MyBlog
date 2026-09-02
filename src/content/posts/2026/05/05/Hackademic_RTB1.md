@@ -1,11 +1,11 @@
 ---
-title: Vulnhub Hackademic_RTB1 WriteUp
+title: 'Vulnhub 打靶记录:Hackademic RTB1'
 published: 2026-05-05
-description: 经典的 SQL 注入利用与内核提权靶机 Writeup
+description: 'VulnHub 上的 Hackademic RTB1，难度 Easy。Union SQL 注入爆库获取管理员账密登入后台，上传 PHP Shell 反弹获得 WebShell，最后用内核漏洞提权到 root。'
 image: './img/header/Hackademic_RTB1.png'
-tags: ["Vulnhub", "Security","靶机", "writeup"]
-category: 'Security'
-draft: false 
+tags: ["VulnHub", "Easy", "Linux", "SQL注入", "文件上传", "内核提权"]
+category: '靶机渗透'
+draft: false
 lang: ''
 ---
 

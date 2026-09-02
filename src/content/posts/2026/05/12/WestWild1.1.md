@@ -1,11 +1,11 @@
 ---
-title: Vulnhub WestWild 1.1 WriteUp
+title: 'Vulnhub 打靶记录:WestWild 1.1'
 published: 2026-05-12
-description: "WestWild 1.1 是一台发布于 VulnHub 平台的入门级渗透测试靶机，适合正在备考 OSCP 或初学渗透测试的学习者练习。靶机模拟了一个存在信息泄露和权限配置不当的 Linux 环境，完整复现了从信息收集、SMB 匿名访问、凭据获取到纵向提权的攻击链路。"
+description: 'VulnHub 上的 WestWild 1.1，难度 Easy。通过 SMB 匿名访问获取凭据，发现可写文件泄露密码，利用 sudo 权限直接提权到 root。'
 image: './img/header/WestWild1.1.png'
-tags: ["Vulnhub", "Security","靶机", "writeup"]
-category: 'Security'
-draft: false 
+tags: ["VulnHub", "Easy", "Linux", "信息收集", "凭据复用", "sudo提权"]
+category: '靶机渗透'
+draft: false
 lang: ''
 ---
 

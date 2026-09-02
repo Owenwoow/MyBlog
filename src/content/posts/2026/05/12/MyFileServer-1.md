@@ -1,11 +1,11 @@
 ---
-title: Vulnhub MyFileServer-1 WriteUp
+title: 'Vulnhub 打靶记录:MyFileServer 1'
 published: 2026-05-12
-description: My File Server 1 是一台以文件服务为主题的入门级 VulnHub 靶机，开放了多个网络服务——FTP、SMB、NFS、HTTP——模拟了一个典型的小型文件共享服务器环境。
+description: 'VulnHub 上的 MyFileServer 1，难度 Easy。通过日志分析和多服务枚举收集用户凭证，利用 FTP 凭据上传 SSH 公钥获得初始访问权限，最后通过 Dirty COW 内核漏洞提权到 root。'
 image: './img/header/MyFileServer-1.png'
-tags: ["Vulnhub", "Security","靶机", "writeup"]
-category: 'Security'
-draft: false 
+tags: ["VulnHub", "Easy", "Linux", "信息收集", "凭据复用", "内核提权"]
+category: '靶机渗透'
+draft: false
 lang: ''
 ---
 

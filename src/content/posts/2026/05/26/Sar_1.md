@@ -1,10 +1,10 @@
 ---
-title: Vulnhub Sar_1 WriteUp
+title: 'Vulnhub 打靶记录:Sar 1'
 published: 2026-05-26
-description: "Sar: 1 是一台 Vulnhub 中的 Linux 靶机，核心攻击面为 Web 应用中，结合靶机上可写的计划任务脚本完成提权，最终获取 Root 权限。"
+description: 'VulnHub 上的 Sar 1，难度 Easy。sar2HTML 命令注入漏洞获取 webshell，利用可写的计划任务脚本注入反弹 Shell，通过定时任务直接提权到 root。'
 image: './img/Sar_1/Sar_1_header.png'
-tags: ["Vulnhub", "Security","靶机", "writeup"]
-category: 'Security'
+tags: ["VulnHub", "Easy", "Linux", "CMS漏洞", "命令注入", "计划任务提权"]
+category: '靶机渗透'
 draft: false
 lang: ''
 ---

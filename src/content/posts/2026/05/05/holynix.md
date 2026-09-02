@@ -1,10 +1,10 @@
 ---
-title: Vulnhub Holynix WriteUp
+title: 'Vulnhub 打靶记录:Holynix'
 published: 2026-05-05
-description: '巧妙运用 SQL 注入和 LFI 漏洞进行渗透，结合 Cookie 越权和 sudo 提权拿下靶机'
+description: 'VulnHub 上的 Holynix，难度 Medium。通过 SQL 注入万能密钥绕过登录，利用 LFI 读取系统文件获得用户列表，上传 WebShell 后利用 sudo 命令劫持实现提权到 root。'
 image: './img/header/holynix.png'
-tags: ["Vulnhub", "Security", "靶机", "writeup"]
-category: 'Security'
+tags: ["VulnHub", "Medium", "Linux", "SQL注入", "文件包含", "sudo提权"]
+category: '靶机渗透'
 draft: false
 lang: ''
 ---

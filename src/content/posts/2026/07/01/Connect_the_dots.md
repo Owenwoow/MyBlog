@@ -1,11 +1,11 @@
 ---
-title: Vulnhub Connect The Dots 1 WriteUp
+title: 'Vulnhub 打靶记录:Connect The Dots 1'
 published: 2026-07-01
-description: '一台非常考验知识面的 Vulnhub 靶机，涉及 jsfuck、NFS、FTP 多文件读取、getcap 获取文件能力、polkit、文件图片隐写、摩尔斯电码和断电隐患文件恢复等知识点。'
+description: 'VulnHub 上的 Connect The Dots 1，难度 Hard。从图片隐写的摩尔斯码中提取凭证登入 SSH，利用 Vim SWP 文件恢复和 polkit SUID 机制完成多层级提权到 root。'
 image: './img/Connect_the_dots/Connect_the_dots_header.png'
-tags: ["Vulnhub", "Security", "靶机", "writeup"]
-category: 'Security'
-draft: false 
+tags: ["VulnHub", "Hard", "Linux", "隐写", "凭据复用", "提权"]
+category: '靶机渗透'
+draft: false
 lang: ''
 ---
 

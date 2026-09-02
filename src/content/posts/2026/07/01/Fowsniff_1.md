@@ -1,11 +1,11 @@
 ---
-title: Vulnhub Fowsniff 1 WriteUp
+title: 'Vulnhub 打靶记录:Fowsniff 1'
 published: 2026-07-01
-description: 'Fowsniff: 1 是一台以“社工 + 邮件服务渗透”为主线的中等难度 CTF 靶机，需通过 OSINT 追踪泄露密码，利用 POP3 邮件服务获取 SSH 临时密码，并借助 MOTD 机制中的组可写脚本完成提权。'
+description: 'VulnHub 上的 Fowsniff 1，难度 Medium。通过 OSINT 获取泄露密码并用 John 破解 MD5，Hydra 爆破 POP3 读取邮件获取 SSH 临时密码，最后利用 MOTD 脚本组可写配置提权到 root。'
 image: './img/Fowsniff_1/Fowsniff_1_header.png'
-tags: ["Vulnhub", "Security", "靶机", "writeup"]
-category: 'Security'
-draft: false 
+tags: ["VulnHub", "Medium", "Linux", "密码破解", "弱口令爆破", "提权"]
+category: '靶机渗透'
+draft: false
 lang: ''
 ---
 

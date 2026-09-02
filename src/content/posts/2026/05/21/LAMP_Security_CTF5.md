@@ -1,10 +1,10 @@
 ---
-title: Vulnhub LAMPSecurity CTF5 WriteUp
+title: 'Vulnhub 打靶记录:LAMPSecurity CTF5'
 published: 2026-05-21
-description: LAMPSecurity CTF5 是 madirish2600 出品的 LAMPSecurity 系列第五个靶机，基于 Fedora 8 的 LAMP 环境搭建。靶机不提供任何初始凭据，需要从零开始通过信息收集和漏洞利用获取系统权限。涉及 NanoCMS 凭证泄露、MySQL 数据库利用、Samba 服务探测等多个攻击面。
+description: 'VulnHub 上的 LAMPSecurity CTF5，难度 Medium。NanoCMS 凭证泄露获取后台，文件上传反弹 Shell，从笔记文件发现明文 root 密码直接登入。'
 image: './img/LAMP_Security_CTF5/LAMP_Security_CTF5_header.png'
-tags: ["Vulnhub", "Security", "靶机", "writeup"]
-category: 'Security'
+tags: ["VulnHub", "Medium", "Linux", "CMS漏洞", "文件上传", "密码破解"]
+category: '靶机渗透'
 draft: false
 lang: ''
 ---
