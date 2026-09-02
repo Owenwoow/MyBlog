@@ -1,8 +1,8 @@
 ---
 title: Vulnhub LAMP_Security_CTF4 WriteUp
 published: 2026-09-02
-description: '超级简单的一台机器，没什么难度，考验 SQL 注入。'
-image: ''
+description: '超级简单的一台机器，没什么难度，考验sql注入。'
+image: './img/LAMP_Security_CTF4/LAMP_Security_CTF4_header.png'
 tags: ["Vulnhub", "Security", "靶机", "writeup"]
 category: 'Security'
 draft: false
@@ -13,7 +13,7 @@ lang: ''
 
 ### 靶场介绍
 
-超级简单的一台机器，没什么难度，考验 SQL 注入。
+超级简单的一台机器，没什么难度，考验sql注入。
 
 ### 靶场信息
 
@@ -24,7 +24,7 @@ lang: ''
 | 靶机 URL | https://www.vulnhub.com/entry/lampsecurity-ctf4,83/ |
 | 下载（镜像） | https://download.vulnhub.com/lampsecurity/ctf4.zip  |
 
-# 1.信息收集
+# # 1.信息收集
 
 ## 1.1.Nmap信息扫描
 
@@ -152,12 +152,12 @@ MAC Address: 00:0C:29:E2:A7:B1 (VMware)
 
 ```
 
-细看 Nmap 的漏洞扫描数据，已经提示目标的 Web 服务上存在 SQLi 的漏洞，后续只要针对这个进行验证。
+细看 nmap 的漏洞扫描数据，已经提示目标的web服务上存在 SQLi 的漏洞，后续只要针对这个进行验证。
 
 
 # 2.权限立足
 
-### 2.1.SQL 注入
+### 2.1.sql 注入
 
 blog 页面的 `id` 参数直接拼在 URL 上（`?page=blog&title=Blog&id=6`），先测一下是不是数字型注入——顺着这个思路用 `order by` 挨个试字段数，定下字段数之后，紧接着要搞清楚回显到底落在第几列，不然后面塞进去的东西根本看不到结果。于是用 `select 1,2,3,4,5` 占坑测一下：
  
@@ -202,9 +202,9 @@ union select 1,2,group_concat(column_name),4,5 from ehks where user_id=1 -- -
 
 
 ---
-### 2.2.SSH 登入
+### 2.2.ssh登入
 
-直接使用 SSH 登入表示缺少一些协议，需要对一些协议进行指定。
+直接使用ssh登入表示缺少一些协议，需要对一些协议进行指定。
 
 ```
 ssh \
@@ -220,7 +220,7 @@ ssh \
 ---
 # 3.提权
 
-这次提权完全没有什么操作，登入的用户 `dstevens`，拥有完整的 sudo 权限，现在直接 sudo su 切换成 root 用户即可，到此就完成了这台靶机的全部内容。
+这次提权完全没有什么操作，登入的用户 `dstevens`，拥有完整的 sudo 权限，现在直接sudo su 切换成root用户即可，到此就完成了这台靶机的全部内容。
 
 ![](./img/LAMP_Security_CTF4/image-20260815204214115.png)
 
@@ -251,7 +251,7 @@ ssh \
 	
 	允许客户端使用 `diffie-hellman-group14-sha1` 做密钥交换算法。这个算法同样在较新版本的 OpenSSH 里被移出了默认列表，老服务端如果只支持这个 KEX 算法，不加这条参数在密钥交换阶段就会直接报 "no matching key exchange method found"。
 
-### 4.2.使用 sqlmap 注入
+### 4.2.使用sqlmap注入
 
 枚举当前数据库
 

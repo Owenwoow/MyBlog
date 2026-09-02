@@ -2,7 +2,7 @@
 title: Vulnhub LAMP_Security_CTF7 WriteUp
 published: 2026-09-02
 description: 'LAMP Security 系列的第 7 台，难度 easy，整体是一条很顺的链：靠 SQL 报错在后台用万能密码登入，找到文件上传点传反弹 shell 拿到 webshell，再从 root 备份的 backup.sql 里拖出一整张…'
-image: ''
+image: './img/LAMP_Security_CTF7/LAMP_Security_CTF7_header.png'
 tags: ["Vulnhub", "Security", "靶机", "writeup"]
 category: 'Security'
 draft: false
@@ -369,7 +369,7 @@ admin' or 1=1#
 
 但现在的问题是：文件的存放路径在哪里？翻了之前扫描出来的目录，8080 站点本身目录很少、都翻看过了，没有存放文件的目录。倒是在另外那个 80 站点扫出来一个叫 `assets` 的目录——凭经验我猜测上传的文件或许就放在那里。
 
-结果确实如此，`http://192.168.200.129/assets` 确实是存放上传文件的路径。那么现在目标很明确了，上传反弹 shell，执行拿到 webshell。
+结果确实如此，`http://192.168.200.129/assets` 确实是存放上传文件的路径。那么现在目标很明确了，上传反弹 shell，执行拿到webshell。
 
 ![](./img/LAMP_Security_CTF7/image-20260817165023465.png)
 
@@ -492,7 +492,7 @@ uid=0(root) gid=0(root) groups=0(root) ...
 
 除了正常走完的这条链，这里再记两个和这台机器相关的操作。
 
-### 5.1.LAMP_Security_CTF7 靶机如何获取 IP
+### 5.1.LAMP_Security_CTF7靶机如何获取 ip
 
 运行虚拟机，鼠标点击运行界面，按键盘上的 `e` 键进入编辑模式，会看到三行：root、kernel、initrd。
 
@@ -504,7 +504,7 @@ uid=0(root) gid=0(root) groups=0(root) ...
 
 #### 修改网卡名称
 
-无法获取 IP 的原因多半是网卡和配置中的网卡名不同，需要修改配置中的网卡名称即可获取，直接把 `ifcfg-eth0` 改名/复制成 `ifcfg-eth1`，并把文件内容里的 `DEVICE=eth0` 改成 `DEVICE=eth1`，同时删掉或更新 `HWADDR`，然后重启网络服务：
+无法获取 IP 的原因多半是网卡和配置中的网卡名不同，需要修改配置中的网卡名称即可获取直接把 `ifcfg-eth0` 改名/复制成 `ifcfg-eth1`，并把文件内容里的 `DEVICE=eth0` 改成 `DEVICE=eth1`，同时删掉或更新 `HWADDR`，然后重启网络服务：
 
 ```bash
 vi /etc/sysconfig/network-scripts/ifcfg-eth0
@@ -515,9 +515,9 @@ ip a
 
 
 ---
-## 5.2.补充做法：手工 SQL 注入
+## 5.2.补充做法：手工SQL注入
 
-回到我们之前是有万能密码登入的页面，在 username 输入框中填入 `'`，点击登入页面。
+回到我们之前是有万能密钥登入的页面，在 username 输入框中填入`'` , 点击登入页面。
 
 ![](./img/LAMP_Security_CTF7/image-20260818225600895.png)
 
@@ -529,7 +529,7 @@ ip a
 Invalid query: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '''' AND password=md5('') and is_admin=1' at line 1 Whole query: select * from users where username=''' AND password=md5('') and is_admin=1
 ```
 
-报错界面的信息很多，告诉了我们整条查询语句，由此我们就可以构建 payload。不过在这里我要说的另外一种方式是报错注入。
+报错界面的信息很多，告诉了我们整条查询语句，一次我们就可以构建payload。不过在这里我要说的另外一种方式是报错注入。
 
 MySQL 内置的 XML 查询函数，本来用途是从 XML 字符串里提取节点值。  如果 xpath 路径非法呢？MySQL 抛出 XPATH 报错，**并把非法路径的值写进报错信息**。
 
@@ -543,17 +543,17 @@ password=&username=' and extractvalue(1, concat(0x7e, (SELECT database()), 0x7e)
 
 ![](./img/LAMP_Security_CTF7/image-20260818230331275.png)
 
-下面再介绍一下，知道了是报错注入，如何用 sqlmap 一键梭哈。
+下面在介绍一下，知道了是报错注入，如何用sqlmap一键梭哈。
 
 > 补充：
 
-curl 的时候发现一个华点，开发者直接把 SQL 查询命令以代码注释的方法打印在了页面上。
+curl的时候发现一个华点，开发者直接把sql查询命令以代码注释的方法打印在了页面上。
 
 ![](./img/LAMP_Security_CTF7/image-20260818231650526.png)
 
-### Sqlmap 的报错注入使用
+### Sqlmap的报错注入使用
 
-POST 请求不能直接输入 url，需要构造好请求，这里介绍两种方法。
+POST请求不能直接输入url需要构造好请求，这里介绍两种方法。
 
 #### 方法一：请求包文件
 
